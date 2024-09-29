@@ -90,6 +90,10 @@ module.exports = {
       oddsValues: {
         type: Sequelize.JSON
       },
+      bonusQuantity: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

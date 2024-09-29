@@ -40,7 +40,12 @@ module.exports = (sequelize, DataTypes) => {
     result: DataTypes.STRING,
     oddsId: DataTypes.INTEGER,
     oddsName: DataTypes.STRING,
-    oddsValues: DataTypes.JSON
+    oddsValues: DataTypes.JSON,
+    bonusQuantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 40,
+    },
   }, {
     sequelize,
     modelName: 'Fixture',

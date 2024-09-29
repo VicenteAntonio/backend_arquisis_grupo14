@@ -14,10 +14,10 @@ router.post('requests.create', '/', async (ctx) => {
     }
     let request = await ctx.orm.Request.create(ctx.request.body);
     const { groupId } = request;
-    const { quantity } = request;
+    const { bonusbonusQuantity } = request;
 
-    if (groupId === '14' && quantity > 0) {
-      const amount = Number(ctx.request.body.price) * Number(quantity);
+    if (groupId === '14' && bonusQuantity > 0) {
+      const amount = Number(bonusQuantity);
 
       await ctx.orm.Request.update(
         { depositToken: "" },
@@ -40,19 +40,17 @@ router.post('requests.create', '/', async (ctx) => {
   }
 });
 
-async function findFixtureAndUpdateQuantity(request, ctx) {
+async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   try {
-    const fixture = await ctx.orm.Flight.findOne({
+    const fixture = await ctx.orm.Fixture.findOne({
       where: {
-        fixtureId: request.fixtureId,
-        arrivalAirportId: request.arrivalAirport,
-        departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
+        fixtureId: request.fixture_id,
       },
     });
 
-    const updatedQuantity = request.quantity * 1000;
+    const updatedbonusQuantity = fixture.bonusbonusQuantity - request.bonusQuantity;
 
-    await fixture.update({ quantity: updatedQuantity });
+    await fixture.update({ bonusQuantity: updatedbonusQuantity });
     console.log('Fixture updated:', fixture.id);
   } catch (error) {
     console.error('Error updating fixture:', error);

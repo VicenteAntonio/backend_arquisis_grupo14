@@ -1,0 +1,11 @@
+version: '3'
+services:
+  api:
+    image: public.ecr.aws/e9p9x5g6/grupo14arquisis:api
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+
+  listener:
+    image: public.ecr.aws/e9p9x5g6/grupo14arquisis:listener

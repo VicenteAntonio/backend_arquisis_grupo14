@@ -1,2 +1,9 @@
+listener/node_modules
+api/node_modules
+requests/node_modules
+validations/node_modules
 /node_modules
+node_modules
+.DS_Store
 .env
+grupo14arquisis.pem

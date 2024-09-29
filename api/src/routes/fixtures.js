@@ -33,6 +33,9 @@ router.post('/fixtures.create', "/", async (ctx) => {
         fixtureTimezone: receivedfixture.fixture.timezone,
         fixtureTimestamp: receivedfixture.fixture.timestamp,
         fixtureStatus: receivedfixture.fixture.status,
+        oddsId: receivedfixture.odds.id,
+        oddsName: receivedfixture.odds.name,
+        oddsValue: receivedfixture.odds.value,
         result: `${receivedfixture.goals.home} - ${receivedfixture.goals.away}`
       };
 

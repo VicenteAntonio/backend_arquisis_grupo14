@@ -61,12 +61,10 @@ module.exports = {
         type: Sequelize.STRING
       },
       fixtureId: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
+        type: Sequelize.INTEGER
       },
       fixtureReferee: {
-        type: Sequelize.STRING,
-        allowNull: true
+        type: Sequelize.STRING
       },
       fixtureDate: {
         type: Sequelize.DATE
@@ -82,6 +80,15 @@ module.exports = {
       },
       result: {
         type: Sequelize.STRING
+      },
+      oddsId: {
+        type: Sequelize.INTEGER
+      },
+      oddsName: {
+        type: Sequelize.STRING
+      },
+      oddsValues: {
+        type: Sequelize.JSON
       },
       createdAt: {
         allowNull: false,

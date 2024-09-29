@@ -17,25 +17,13 @@ module.exports = (sequelize, DataTypes) => {
     homeTeamId: DataTypes.INTEGER,
     homeTeamName: DataTypes.STRING,
     homeTeamLogo: DataTypes.STRING,
-    homeTeamWinner: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-    },
+    homeTeamWinner: DataTypes.BOOLEAN,
     awayTeamId: DataTypes.INTEGER,
     awayTeamName: DataTypes.STRING,
     awayTeamLogo: DataTypes.STRING,
-    awayTeamWinner: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-    },
-    goalsHome: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    goalsAway: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
+    awayTeamWinner: DataTypes.BOOLEAN,
+    goalsHome: DataTypes.INTEGER,
+    goalsAway: DataTypes.INTEGER,
     leagueId: DataTypes.INTEGER,
     leagueName: DataTypes.STRING,
     leagueCountry: DataTypes.STRING,
@@ -44,18 +32,15 @@ module.exports = (sequelize, DataTypes) => {
     leagueSeason: DataTypes.STRING,
     leagueRound: DataTypes.STRING,
     fixtureId: DataTypes.INTEGER,
-    fixtureReferee: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    fixtureDate: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
+    fixtureReferee: DataTypes.STRING,
+    fixtureDate: DataTypes.DATE,
     fixtureTimezone: DataTypes.STRING,
     fixtureTimestamp: DataTypes.BIGINT,
-    fixtureStatus: DataTypes.JSON, 
-    result: DataTypes.STRING
+    fixtureStatus: DataTypes.JSON,
+    result: DataTypes.STRING,
+    oddsId: DataTypes.INTEGER,
+    oddsName: DataTypes.STRING,
+    oddsValues: DataTypes.JSON
   }, {
     sequelize,
     modelName: 'Fixture',

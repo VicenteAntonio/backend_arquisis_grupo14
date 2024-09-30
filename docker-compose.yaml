@@ -8,7 +8,7 @@ services:
     volumes:
       - ./api:/app
     ports:
-      - "3001:3001"
+      - "3000:3000"
     networks: 
       - app-networks
     depends_on:

@@ -4,14 +4,35 @@ const moment = require('moment');
 
 const router = new Router();
 
-async function findUser(request) {
-    try {
-        // Busca el usuario que realizó la solicitud
-        const response = await axios.get(`${process.env.API_URL}/users/${request.userId}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error finding fixture:', error);
+async function findFixture(request) {
+  try {
+    const response = await axios.get(`${process.env.API_URL}/fixtures/find`, {
+      params: {
+        fixtureId: request.departureAirport,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error finding fixture:', error);
+  }
+}
+
+async function findFixtureAndUpdateQuantity(request) {
+  try {
+    const fixture = await findFixture(request);
+
+    let updatedQuantity = fixture.bonusQuantity;
+
+    if (request.seller === 11) {
+      updatedQuantity -= request.quantity;
     }
+
+    await axios.patch(`${process.env.API_URL}/fixtures/${fixture.fixtureId}`, { bonusQuantity: updatedQuantity });
+    console.log('fixture updated:', fixture.fixtureId);
+  } catch (error) {
+    console.error('Error updating fixture:', error);
+  }
 }
 
 router.post('validations.create', '/', async (ctx) => {
@@ -25,7 +46,7 @@ router.post('validations.create', '/', async (ctx) => {
       const request = response.data;
   
       if (!valid) {
-        console.log(`Predicción rechazada para request ${requestId}`);
+        console.log(`Compra rechazada para request ${requestId}`);
         await axios.patch(`${process.env.API_URL}/requests/${requestId}`, { status: 'rejected' });
         await findUserAndUpdateRequests(request);
         ctx.body = validation;
@@ -33,7 +54,7 @@ router.post('validations.create', '/', async (ctx) => {
         return;
       }
   
-      console.log(`Predicción aceptada para request ${requestId}`);
+      console.log(`Compra aceptada para request ${requestId}`);
       await axios.patch(`${process.env.API_URL}/requests/${requestId}`, { status: 'accepted' });
       ctx.body = validation;
       ctx.status = 201;
@@ -42,3 +63,5 @@ router.post('validations.create', '/', async (ctx) => {
       ctx.status = 400;
     }
   });
+
+  module.exports = router;

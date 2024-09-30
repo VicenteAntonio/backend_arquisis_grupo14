@@ -1,7 +1,7 @@
 const Router = require('koa-router');
 const fixtures = require('./routes/fixtures.js');
-const requests = require('./routes/requests');
-const validations = require('./routes/validations');
+const requests = require('./routes/requests.js');
+const validations = require('./routes/validations.js');
 
 const router = new Router();
 

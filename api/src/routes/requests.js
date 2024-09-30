@@ -2,7 +2,6 @@ const Router = require('koa-router');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const moment = require('moment-timezone');
-const { tx } = require('../utils/trx');
 
 const router = new Router();
 

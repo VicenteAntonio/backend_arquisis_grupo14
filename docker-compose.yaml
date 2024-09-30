@@ -1,0 +1,83 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api
+    restart: unless-stopped
+    volumes:
+      - ./api:/app
+    ports:
+      - "3001:3001"
+    networks: 
+      - app-networks
+    depends_on:
+      - db
+    env_file:
+      - ./api/.env
+
+  db:
+    image: postgres
+    container_name: postgres
+    networks:
+      - app-networks
+    volumes:
+      - db-volume:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+
+  listener:
+    build:
+      context: ./listener
+      dockerfile: Dockerfile
+    container_name: listener
+    restart: unless-stopped
+    volumes:
+      - ./listener:/app
+    networks:
+      - app-networks
+    depends_on:
+      - api
+    env_file:
+      - ./listener/.env
+
+  requests:
+    build:
+      context: ./request
+      dockerfile: Dockerfile
+    container_name: request
+    restart: unless-stopped
+    volumes:
+      - ./request:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - app-networks
+    depends_on:
+      - api
+    env_file:
+      - ./request/.env
+  
+  validations:
+    build:
+      context: ./validations
+      dockerfile: Dockerfile
+    container_name: validations
+    restart: unless-stopped
+    volumes:
+      - ./validations:/app
+    ports:
+      - "9000:9000"
+    networks:
+      - app-networks
+    depends_on:
+      - api
+    env_file:
+      - ./validations/.env
+  
+networks:
+  app-networks:
+    driver: bridge
+
+volumes:
+  db-volume:

@@ -41,6 +41,21 @@ services:
     env_file:
       - ./listener/.env
 
+  history:
+    build:
+      context: ./history  # Directorio donde se encuentra tu Dockerfile y código para history
+      dockerfile: Dockerfile  # Nombre del Dockerfile en el directorio ./history
+    container_name: history  # Nombre del contenedor
+    restart: unless-stopped
+    volumes:
+      - ./history:/app  # Volumen que mapea el código de history
+    networks:
+      - app-networks
+    depends_on:
+      - api  # Este servicio depende del servicio api
+    env_file:
+      - ./history/.env  # Archivo de variables de entorno para el servicio history
+
   requests:
     build:
       context: ./request
@@ -74,10 +89,11 @@ services:
       - api
     env_file:
       - ./validations/.env
-  
+
 networks:
   app-networks:
     driver: bridge
 
 volumes:
   db-volume:
+

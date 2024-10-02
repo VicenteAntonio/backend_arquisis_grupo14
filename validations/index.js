@@ -20,7 +20,7 @@ dotenv.config();
 const HOST = 'broker.iic2173.org';
 const PORT = 9000;
 const USER = 'students';
-const PASSWORD = 'iic2173-2024-1-students';
+const PASSWORD = 'iic2173-2024-2-students';
 const TOPIC = 'fixtures/validation';
 
 const client = mqtt.connect(`mqtt://${HOST}:${PORT}`, {
@@ -44,8 +44,8 @@ function parseValidationData(validationData) {
     try {
       const validationString = JSON.parse(validationData);
       const validation = {
-        requestId: validationString.request_id,
-        groupId: validationString.group_id,
+        request_id: validationString.request_id,
+        group_id: validationString.group_id,
         seller: validationString.seller,
         valid: validationString.valid,
       };

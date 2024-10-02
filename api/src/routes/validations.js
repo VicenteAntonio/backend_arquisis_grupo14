@@ -4,6 +4,10 @@ const moment = require('moment');
 
 const router = new Router();
 
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function findFixture(request) {
   try {
     const response = await axios.get(`${process.env.API_URL}/fixtures/find`, {
@@ -18,18 +22,24 @@ async function findFixture(request) {
   }
 }
 
-async function findFixtureAndUpdateQuantity(request) {
+async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   try {
-    const fixture = await findFixture(request);
+    const fixture = await ctx.orm.Fixture.findOne({
+      where: {
+        fixtureId: request.fixture_id,
+      },
+    });
 
-    let updatedQuantity = fixture.bonusQuantity;
+    const updatedbonusQuantity = fixture.bonusQuantity + request.quantity;
+    const url = `${process.env.API_URL}/fixtures/${fixture.fixtureId}`;
 
-    if (request.seller === 11) {
-      updatedQuantity -= request.quantity;
-    }
-
-    await axios.patch(`${process.env.API_URL}/fixtures/${fixture.fixtureId}`, { bonusQuantity: updatedQuantity });
-    console.log('fixture updated:', fixture.fixtureId);
+    // Datos a enviar en el cuerpo de la solicitud
+    const data = {
+      bonusQuantity: updatedbonusQuantity,
+    };
+    const response = await axios.patch(url, data);
+    console.log('Fixture actualizado:', response.data);
+    return response.data;
   } catch (error) {
     console.error('Error updating fixture:', error);
   }
@@ -42,14 +52,15 @@ router.post('validations.create', '/', async (ctx) => {
       const validation = await ctx.orm.Validation.create(ctx.request.body);
       const { valid } = validation;
       const { request_id } = validation;
-  
+      await delay(1000);
       const response = await axios.get(`${process.env.API_URL}/requests/${request_id}`);
       const request = response.data;
   
       if (!valid) {
         console.log(`Compra rechazada para request ${request_id}`);
         await axios.patch(`${process.env.API_URL}/requests/${request_id}`, { status: 'rejected' });
-        await findUserAndUpdateRequests(request);
+        //await findUserAndUpdateRequests(request);
+        const fixture = await findFixtureAndUpdatebonusQuantity(request, ctx);
         ctx.body = validation;
         ctx.status = 201;
         return;

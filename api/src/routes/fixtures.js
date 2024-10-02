@@ -116,7 +116,9 @@ router.get('fixtures.list', '/', async (ctx) => {
 
 router.get('fixtures.find', '/:id', async (ctx) => {
   try {
-    const fixture = await ctx.orm.Fixture.findByPk(ctx.params.id);
+    const fixture = await ctx.orm.Fixture.findOne({
+      where: { fixtureId: ctx.params.id }  // Cambia 'fixtureId' si tu atributo tiene otro nombre
+    });
     if (fixture) {
       ctx.body = fixture;
       ctx.status = 200;
@@ -148,6 +150,25 @@ router.get('fixtures.find', '/fixture/:fixtureId', async (ctx) => {
   } catch (error) {
     ctx.body = { error: error.message };
     ctx.status = 500;
+  }
+});
+
+router.patch('fixtures.update', '/:fixture_id', async (ctx) => {
+  try {
+    const fixture = await ctx.orm.Fixture.findOne({
+      where: { fixtureId: ctx.params.fixture_id },
+    });
+    if (!fixture) {
+      ctx.body = { error: 'Request not found' };
+      ctx.status = 404;
+      return;
+    }
+    await fixture.update(ctx.request.body);
+    ctx.body = fixture;
+    ctx.status = 200;
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 400;
   }
 });
 

@@ -60,7 +60,7 @@ async function sendValidationToApi(validation) {
       const response = await axios.post(`${process.env.API_URL}/validations`, validation);
       console.log('Validation sent to API:', response.data);
     } catch (error) {
-      console.error('Error sending validation to API:', error.message);
+      console.error('Error sending validation to API:', error.response.data);
     }
 }
 

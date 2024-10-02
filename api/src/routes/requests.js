@@ -7,29 +7,21 @@ const router = new Router();
 
 router.post('requests.create', '/', async (ctx) => {
   try {
-    if (ctx.request.body.groupId === '14') {
-      ctx.request.body.requestId = uuidv4();
-      ctx.request.body.datetime = moment().tz('America/Santiago').format();
+    console.log("en post de create de la api")
+    const all_data_request = ctx.request.body;
+    all_data_request.request_id = uuidv4();
+    if (all_data_request.group_id == "14"){
+      console.log("está entrando al if de 14")
+      all_data_request.datetime =  moment.utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
+      all_data_request.seller = 0;
     }
-    let request = await ctx.orm.Request.create(ctx.request.body);
-    const { groupId } = request;
-    const { bonusbonusQuantity } = request;
-
-    if (groupId === '14' && bonusQuantity > 0) {
-      const amount = Number(bonusQuantity);
-
-      await ctx.orm.Request.update(
-        { depositToken: "" },
-        { where: { requestId: request.requestId } },
-      );
-      request = await ctx.orm.Request.findOne({
-        where: { requestId: request.requestId },
-      });
-
-      if (request) {
-        await axios.post(process.env.REQUEST_URL, request);
-      }
-    }
+    
+    let request = await ctx.orm.Request.create(all_data_request);
+    // si es que es un post desde el broker de otro grupo no se envía al broker para validar
+    if (all_data_request.group_id == "14"){
+          await axios.post(process.env.REQUEST_URL, all_data_request);
+        }
+    
     ctx.body = request;
     ctx.status = 201;
   } catch (error) {
@@ -43,11 +35,11 @@ async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   try {
     const fixture = await ctx.orm.Fixture.findOne({
       where: {
-        fixtureId: request.fixture_id,
+        fixtureId: request.fixtureId,
       },
     });
 
-    const updatedbonusQuantity = fixture.bonusbonusQuantity - request.bonusQuantity;
+    const updatedbonusQuantity = fixture.bonusQuantity - request.bonusQuantity;
 
     await fixture.update({ bonusQuantity: updatedbonusQuantity });
     console.log('Fixture updated:', fixture.id);
@@ -56,10 +48,10 @@ async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   }
 }
 
-router.patch('requests.update', '/:requestId', async (ctx) => {
+router.patch('requests.update', '/:request_id', async (ctx) => {
   try {
     const request = await ctx.orm.Request.findOne({
-      where: { requestId: ctx.params.requestId },
+      where: { request_id: ctx.params.request_id },
     });
     if (!request) {
       ctx.body = { error: 'Request not found' };
@@ -75,10 +67,10 @@ router.patch('requests.update', '/:requestId', async (ctx) => {
   }
 });
 
-router.get('requests.show', '/:requestId', async (ctx) => {
+router.get('requests.show', '/:request_id', async (ctx) => {
   try {
     const request = await ctx.orm.Request.findOne({
-      where: { requestId: ctx.params.requestId },
+      where: { request_id: ctx.params.request_id },
     });
     if (request) {
       ctx.body = request;

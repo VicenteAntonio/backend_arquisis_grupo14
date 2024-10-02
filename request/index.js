@@ -21,7 +21,7 @@ dotenv.config();
 const HOST = 'broker.iic2173.org';
 const PORT = 9000;
 const USER = 'students';
-const PASSWORD = 'iic2173-2024-1-students';
+const PASSWORD = 'iic2173-2024-2-students';
 const TOPIC = 'fixtures/requests';
 
 const client = mqtt.connect(`mqtt://${HOST}:${PORT}`, {
@@ -46,14 +46,15 @@ function parseRequestData(requestData) {
     const requestString = JSON.parse(requestData);
     // Ajuste de formato de fecha
     const request = {
-      requestId: requestString.request_id,
-      groupId: requestString.group_id,
+      request_id: requestString.request_id,
+      group_id: requestString.group_id,
       fixture_id: requestString.fixture_id,
       league_name: requestString.league_name,
       round: requestString.round,
-      datetime: requestString.datetime,
+      date: requestString.datetime,
+      result: requestString.result,
       depositToken: requestString.deposit_token,
-      datetime: moment.utc(date).toDate(),
+      datetime: moment.utc(requestString.datetime).format('YYYY-MM-DDTHH:mm:ss[Z]'),
       quantity: requestString.quantity,
       seller: requestString.seller,
     };
@@ -81,7 +82,7 @@ client.on('message', (topic, message) => {
   console.log(`Received message on ${topic}:`, message.toString());
   try {
     const request = parseRequestData(message.toString());
-    if (request.groupId !== '14') {
+    if (request.group_id !== '14') {
       console.log('Request does not belong to group 14');
       sendRequestToApi(request);
     }
@@ -97,17 +98,19 @@ client.on('message', (topic, message) => {
 async function sendRequestToBroker(request) {
   try {
     const parsedRequest = {
-        requestId: request.request_id,
-        groupId: request.group_id,
+        request_id: request.request_id,
+        group_id: request.group_id,
         fixture_id: request.fixture_id,
         league_name: request.league_name,
         round: request.round,
-        datetime: request.datetime,
-        depositToken: request.deposit_token,
-        datetime: moment.utc(request.datetime).format('YYYY-MM-DD HH:mm'),
+        date: request.date,
+        result: request.result,
+        deposit_token: request.deposit_token,
+        datetime : request.datetime,
         quantity: request.quantity,
-        seller: request.seller,
+        seller: 0,
     };
+  
     // Cambiar formato de fecha
     const requestData = JSON.stringify(parsedRequest); // Date Handle
     client.publish(TOPIC, requestData);
@@ -121,6 +124,7 @@ router.post('/', async (ctx) => {
   try {
     const request = ctx.request.body;
     await sendRequestToBroker(request);
+
     ctx.body = request;
     ctx.status = 201;
   } catch (error) {

@@ -33,24 +33,49 @@ router.post('requests.create', '/', async (ctx) => {
   try {
     console.log("en post de create de la api")
     const all_data_request = ctx.request.body;
-    all_data_request.request_id = uuidv4();
-    if (all_data_request.group_id == "14"){
+    //caso se manda desde broker
+    if (all_data_request.request_id) {
+      const existingRequest = await ctx.orm.Request.findOne({
+        where: { request_id: all_data_request.request_id }})
+        // caso se manda desde broker y es un post desde otra parte
+        if (!existingRequest){
+          const userIP = await getUserIP();
+          const location = await getLocationFromIP(userIP);
+          console.log("la location es")
+          console.log(location)
+          all_data_request.location = location;
+          all_data_request.datetime =  moment.utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
+          all_data_request.seller = 0
+          let request = await ctx.orm.Request.create(all_data_request);
+          await findFixtureAndUpdatebonusQuantity(request, ctx)
+          
+          //await axios.post(process.env.REQUEST_URL, request);
+          ctx.body = request;
+        }
+        // caso se manda desde broker y es un post local otra parte
+        else{
+          ctx.body = existingRequest;
+        }
+    }
+    // caso se llega desde local
+    else {
+      console.log("EN EL IF DE SI ES QUE NO SE MANDÓ ID")
+      // Aquí puedes proceder a crear la nueva solicitud
+      all_data_request.request_id = uuidv4();
       const userIP = await getUserIP();
       const location = await getLocationFromIP(userIP);
       console.log("la location es")
       console.log(location)
       all_data_request.location = location;
       all_data_request.datetime =  moment.utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-      all_data_request.seller = 0;
+      all_data_request.seller = 0
+      let request = await ctx.orm.Request.create(all_data_request);
+      await axios.post(process.env.REQUEST_URL, request);
+      const fixture = await findFixtureAndUpdatebonusQuantity(request, ctx)
+      ctx.body = request;
     }
+
     
-    let request = await ctx.orm.Request.create(all_data_request);
-    // si es que es un post desde el broker de otro grupo no se envía al broker para validar
-    if (all_data_request.group_id == "14"){
-          await axios.post(process.env.REQUEST_URL, all_data_request);
-        }
-    
-    ctx.body = request;
     ctx.status = 201;
   } catch (error) {
     console.log(error.message);
@@ -63,14 +88,22 @@ async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   try {
     const fixture = await ctx.orm.Fixture.findOne({
       where: {
-        fixtureId: request.fixtureId,
+        fixtureId: request.fixture_id,
       },
     });
 
-    const updatedbonusQuantity = fixture.bonusQuantity - request.bonusQuantity;
+    const updatedbonusQuantity = fixture.bonusQuantity - request.quantity;
+    console.log("el valor a actualizar es ")
+    console.log(updatedbonusQuantity)
+    const url = `${process.env.API_URL}/fixtures/${fixture.fixtureId}`;
 
-    await fixture.update({ bonusQuantity: updatedbonusQuantity });
-    console.log('Fixture updated:', fixture.id);
+    // Datos a enviar en el cuerpo de la solicitud
+    const data = {
+      bonusQuantity: updatedbonusQuantity,
+    };
+    const response = await axios.patch(url, data);
+    console.log('Fixture actualizado:', response.data);
+    return response.data;
   } catch (error) {
     console.error('Error updating fixture:', error);
   }
@@ -101,9 +134,12 @@ router.get('requests.show', '/:request_id', async (ctx) => {
       where: { request_id: ctx.params.request_id },
     });
     if (request) {
+      console.log("se encontró la request")
       ctx.body = request;
       ctx.status = 200;
     } else {
+      console.log(ctx.params.request_id);
+      console.log("no encontró la request");
       ctx.body = { error: 'Request not found' };
       ctx.status = 404;
     }

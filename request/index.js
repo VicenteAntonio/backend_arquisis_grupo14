@@ -51,10 +51,10 @@ function parseRequestData(requestData) {
       fixture_id: requestString.fixture_id,
       league_name: requestString.league_name,
       round: requestString.round,
-      date: requestString.datetime,
+      date: requestString.date,
       result: requestString.result,
       depositToken: requestString.deposit_token,
-      datetime: moment.utc(requestString.datetime).format('YYYY-MM-DDTHH:mm:ss[Z]'),
+      datetime: requestString.datetime,
       quantity: requestString.quantity,
       seller: requestString.seller,
     };
@@ -82,10 +82,7 @@ client.on('message', (topic, message) => {
   console.log(`Received message on ${topic}:`, message.toString());
   try {
     const request = parseRequestData(message.toString());
-    if (request.group_id !== '14') {
-      console.log('Request does not belong to group 14');
-      sendRequestToApi(request);
-    }
+    sendRequestToApi(request);
     findUserAndUpdateQuantity(request);
     // Send request to API
     // Guardar en una base de datos las request, ver validacion y manejar

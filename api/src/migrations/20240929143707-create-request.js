@@ -24,6 +24,9 @@ module.exports = {
       round: {
         type: Sequelize.STRING
       },
+      location: {
+        type: Sequelize.STRING
+      },
       date: {
         type: Sequelize.DATE
       },

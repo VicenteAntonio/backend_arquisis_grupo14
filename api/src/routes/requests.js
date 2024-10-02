@@ -5,13 +5,41 @@ const moment = require('moment-timezone');
 
 const router = new Router();
 
+async function getUserIP() {
+  try {
+      const response = await axios.get('https://api.ipify.org?format=json');
+      const userIP = response.data.ip;
+      return userIP;
+  } catch (error) {
+      console.error('Error al obtener la IP del usuario:', error);
+      return null;
+  }
+}
+async function getLocationFromIP(ip) {
+  try {
+    const response = await axios.get(`http://ip-api.com/json/${ip}`);
+    const data = response.data;
+    if (data.status === 'fail') {
+      return 'Unknown'; // Devuelve "Unknown" si falla
+    }
+    return `${data.city}, ${data.country}`;
+  } catch (error) {
+    console.error('Error al obtener la ubicación:', error);
+    return 'Unknown'; // En caso de error, devuelve 'Unknown'
+  }
+}
+
 router.post('requests.create', '/', async (ctx) => {
   try {
     console.log("en post de create de la api")
     const all_data_request = ctx.request.body;
     all_data_request.request_id = uuidv4();
     if (all_data_request.group_id == "14"){
-      console.log("está entrando al if de 14")
+      const userIP = await getUserIP();
+      const location = await getLocationFromIP(userIP);
+      console.log("la location es")
+      console.log(location)
+      all_data_request.location = location;
       all_data_request.datetime =  moment.utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
       all_data_request.seller = 0;
     }

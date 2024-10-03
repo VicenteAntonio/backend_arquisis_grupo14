@@ -151,10 +151,10 @@ router.get('requests.show', '/:request_id', async (ctx) => {
 
 router.get('requests.list', '/', async (ctx) => {
   try {
-    const { username } = ctx.query;
-    if (username) {
+    const { deposit_token } = ctx.query;
+    if (deposit_token) {
       const requests = await ctx.orm.Request.findAll({
-        where: { username },
+        where: { deposit_token },
       });
       ctx.body = requests;
       ctx.status = 200;

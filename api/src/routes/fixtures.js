@@ -26,7 +26,7 @@ router.post('/fixtures.create', "/", async (ctx) => {
         leagueLogo: receivedfixture.league.logo,
         legaueFlag: receivedfixture.league.flag,
         leagueSeason: receivedfixture.league.season,
-        LeagueRound: receivedfixture.league.round,
+        leagueRound: receivedfixture.league.round,
         fixtureId: receivedfixture.fixture.id,
         fixtureReferee: receivedfixture.fixture.referee,
         fixtureDate: receivedfixture.fixture.date,

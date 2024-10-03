@@ -87,8 +87,14 @@ module.exports = {
       oddsName: {
         type: Sequelize.STRING
       },
-      oddsValues: {
-        type: Sequelize.JSON
+      oddsHome: {
+        type: Sequelize.DECIMAL(10, 2)
+      },
+      oddsDraw: {
+        type: Sequelize.DECIMAL(10, 2)
+      },
+      oddsAway: {
+        type: Sequelize.DECIMAL(10, 2)
       },
       bonusQuantity: {
         type: Sequelize.INTEGER,

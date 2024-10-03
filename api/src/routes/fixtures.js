@@ -33,14 +33,17 @@ router.post('/fixtures.create', "/", async (ctx) => {
         fixtureTimezone: receivedfixture.fixture.timezone,
         fixtureTimestamp: receivedfixture.fixture.timestamp,
         fixtureStatus: receivedfixture.fixture.status,
-        oddsId: receivedfixture.odds.id,
-        oddsName: receivedfixture.odds.name,
-        oddsValue: receivedfixture.odds.value,
+        oddsId: receivedfixture.odds[0].id,
+        oddsName: receivedfixture.odds[0].name,
+        oddsHome: parseFloat(receivedfixture.odds[0].values[0].odd),
+        oddsDraw: parseFloat(receivedfixture.odds[0].values[1].odd),
+        oddsAway: parseFloat(receivedfixture.odds[0].values[2].odd),
         result: `${receivedfixture.goals.home} - ${receivedfixture.goals.away}`
       };
 
       await ctx.orm.Fixture.create(fixtureToAdd);
     }));
+  
     ctx.status = 201;
   } catch (error) {
     ctx.body = { error: error.message };

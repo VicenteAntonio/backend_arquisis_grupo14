@@ -70,7 +70,7 @@ async function sendRequestToApi(request) {
     const response = await axios.post(`${process.env.API_URL}/requests`, request);
     console.log('Request send to API:', response.data);
   } catch (error) {
-    console.error('Error sending request to API:', error);
+    console.error('Error sending request to API:', error.response.data);
   }
 }
 

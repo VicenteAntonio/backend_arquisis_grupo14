@@ -1,5 +1,5 @@
 {
-  "name": "API",
+  "name": "api", 
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/VicenteAntonio/copia-e0-VicenteAntonio.git",
@@ -22,7 +22,9 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",

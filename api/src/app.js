@@ -18,4 +18,6 @@ app.use(koaBody());
 // koa-router
 app.use(router.routes());
 
+// Cambie de API a api en package.json, por si detecta algun error misterioso
+
 module.exports = app;

@@ -1,0 +1,65 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project: [api, listener, requests, validations, history]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd ${{ matrix.project }}
+          yarn install
+
+      - name: Lint with yarn
+        run: |
+          cd ${{ matrix.project }}
+          yarn lint
+
+      - name: echo
+        run: echo "Linting complete!"
+
+  versioning:
+    name: Bump Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Make script executable
+        run: chmod +x ./scriptsCI/bump_version.sh
+
+      - name: Bump version
+        run: ./scriptsCI/bump_version.sh patch
+
+      - name: Show version
+        run: |
+          echo "Version $(cat VERSION.txt)"

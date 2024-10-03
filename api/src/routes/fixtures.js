@@ -177,6 +177,11 @@ router.patch('fixtures.update', '/:fixture_id', async (ctx) => {
 
 router.put('fixtures.updateHistory', '/history', async (ctx) => {
   try {
+    if (!ctx.request.body || !ctx.request.body.fixtures) {
+      ctx.status = 400;
+      ctx.body = { error: 'Invalid request body' };
+      return;
+    }
     await Promise.all(ctx.request.body.fixtures.map(async (receivedfixture) => {
       const fixturesToUpdate = {
         fixtureId: receivedfixture.fixture.id,

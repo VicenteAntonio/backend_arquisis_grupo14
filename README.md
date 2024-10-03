@@ -150,6 +150,8 @@ BACKEND_URL = <backend_url>
 
 ## Pipeline CI (GitHub Actions)
 
+* Servicio a utilizar: CircleCI
+
 ## Puntos Logrados y No Logrados
 
 ### Puntos Logrados

@@ -37,7 +37,7 @@ function parseFixtureData(fixtureData) {
 
 async function sendFixtureToAPI(fixture) {
     try {
-      const response = await axios.post(`${process.env.API_URL}/fixtures/history`, fixture);  // Asegúrate de que la ruta en la API sea la correcta
+      const response = await axios.put(`${process.env.API_URL}/fixtures/history`, fixture);  // Asegúrate de que la ruta en la API sea la correcta
       console.log('Fixture history sent to API: ', response.data);
     } catch (error) {
       console.error('Error sending fixture history to API: ', error);

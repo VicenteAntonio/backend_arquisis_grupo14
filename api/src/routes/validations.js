@@ -48,10 +48,16 @@ async function findFixtureAndUpdatebonusQuantity(request, ctx) {
 router.post('validations.create', '/', async (ctx) => {
   try {
     const validation = await ctx.orm.Validation.create(ctx.request.body);
-    const { valid, request_id } = validation;
+    const { valid, request_id, quantity } = validation;
     await delay(1000);
+
     const response = await axios.get(`${process.env.API_URL}/requests/${request_id}`);
     const request = response.data;
+
+    // Obtener el token desde la request
+    const deposit_token = request.deposit_token;
+    const cantidad = request.quantity;
+    console.log("Valor de deposit_token recibido:", deposit_token);
 
     if (request.status === 'rejected') {
       console.log(`Request ya fue rechazada por insuficiencia de fondos: ${request_id}`);
@@ -63,21 +69,31 @@ router.post('validations.create', '/', async (ctx) => {
     if (!valid) {
       console.log(`Compra rechazada para request ${request_id}`);
       await axios.patch(`${process.env.API_URL}/requests/${request_id}`, { status: 'rejected' });
-      const fixture = await findFixtureAndUpdatebonusQuantity(request, ctx);
+      await findFixtureAndUpdatebonusQuantity(request, ctx);
       ctx.body = validation;
       ctx.status = 201;
       return;
     }
 
+    // Si es accepted, restar al wallet del usuario
     console.log(`Compra aceptada para request ${request_id}`);
     await axios.patch(`${process.env.API_URL}/requests/${request_id}`, { status: 'accepted' });
+
+    // Actualizar el wallet del usuario
+    console.log(`Compra token ${deposit_token}`);
+    await axios.patch(`${process.env.API_URL}/users/${deposit_token}`, {
+      amount: -(cantidad * 1000)
+    });
+
     ctx.body = validation;
     ctx.status = 201;
   } catch (error) {
+    console.log("Error en la validación:", error.message);
     ctx.body = { error: error.message };
     ctx.status = 400;
   }
 });
+
 
 
   module.exports = router;

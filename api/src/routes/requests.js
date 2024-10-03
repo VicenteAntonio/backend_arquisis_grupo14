@@ -39,15 +39,10 @@ router.post('requests.create', '/', async (ctx) => {
     const deposit_token = all_data_request.deposit_token;
 
     // Agregar un log para ver qué valor está recibiendo como deposit_token
-    console.log("Valor de deposit_token recibido:", deposit_token);
+    console.log("Valor de deposit_token recibido:", `${deposit_token}`);
 
     // Verificar si el deposit_token está vacío o undefined
-    if (!deposit_token || deposit_token.trim() === "") {
-      console.log("El token de depósito está vacío o no es válido.");
-      ctx.body = { error: 'Invalid deposit token' };
-      ctx.status = 400; // Bad Request
-      return;
-    }
+    
 
     // Hacer la solicitud a la API de usuarios para obtener el wallet
     const userResponse = await axios.get(`${process.env.API_URL}/users/${deposit_token}`);

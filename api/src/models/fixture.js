@@ -40,7 +40,9 @@ module.exports = (sequelize, DataTypes) => {
     result: DataTypes.STRING,
     oddsId: DataTypes.INTEGER,
     oddsName: DataTypes.STRING,
-    oddsValues: DataTypes.JSON,
+    oddsHome: DataTypes.DECIMAL(10, 2),
+    oddsDraw: DataTypes.DECIMAL(10, 2),
+    oddsAway: DataTypes.DECIMAL(10, 2),
     bonusQuantity: {
       type: DataTypes.INTEGER,
       allowNull: false,

@@ -39,9 +39,9 @@ function parseFixtureData(fixtureData) {
 async function sendFixtureToAPI(fixture) {
     try {
       const response = await axios.post(`${process.env.API_URL}/fixtures`, fixture);
-      console.log('fixture send to API: ', response.data);
+      console.log('fixture send to API: ', response);
     } catch (error) {
-      console.error('Error sending fixture to API: ', error);
+      console.error('Error sending fixture to API: ', error.response.data);
     }
   }
 

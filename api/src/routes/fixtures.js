@@ -175,4 +175,35 @@ router.patch('fixtures.update', '/:fixture_id', async (ctx) => {
   }
 });
 
+router.put('fixtures.updateHistory', '/history', async (ctx) => {
+  try {
+    await Promise.all(ctx.request.body.fixtures.map(async (receivedfixture) => {
+      const fixturesToUpdate = {
+        fixtureId: receivedfixture.fixture.id,
+        fixtureReferee: receivedfixture.fixture.referee,
+        fixtureTimezone: receivedfixture.fixture.timezone,
+        fixtureDate: receivedfixture.fixture.date,
+        fixtureTimestamp: receivedfixture.fixture.timestamp,
+        fixtureStatus: receivedfixture.fixture.status,
+        goalsHome: receivedfixture.goals.home,
+        goalsAway: receivedfixture.goals.away,
+      };
+      // Ver si alguno de los partidos esta presente en la base de datos y si fixtureId coincide con el de la base de datos, actualiza los datos respectivos
+      const fixture = await ctx.orm.Fixture.findOne({
+        where: { fixtureId: fixturesToUpdate.fixtureId },
+      });
+      if (fixture) {
+        await fixture.update(fixturesToUpdate);
+      }
+    }));
+
+    ctx.status = 201;
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 400;
+  }
+});
+
+// Si se actualiza algún resultado, se ve si alguno de los id 
+
 module.exports = router;

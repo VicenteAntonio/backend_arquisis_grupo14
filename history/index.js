@@ -5,10 +5,10 @@ const axios = require('axios');
 dotenv.config();
 
 const HOST = 'broker.iic2173.org';
-const PORT = 9000;  // El puerto sigue siendo 9000, ajustalo si es necesario
+const PORT = 9000;  
 const USER = 'students';
 const PASSWORD = 'iic2173-2024-2-students';
-const TOPIC = 'fixtures/history';  // Tópico actualizado
+const TOPIC = 'fixtures/history'; 
 
 const client = mqtt.connect(`mqtt://${HOST}:${PORT}`, {
     username: USER,

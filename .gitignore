@@ -6,4 +6,5 @@ validations/node_modules
 node_modules
 .DS_Store
 .env
+**/.env
 grupo14arquisis.pem

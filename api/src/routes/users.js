@@ -15,6 +15,23 @@ router.get('/', async (ctx) => {
   }
 });
 
+// Obtener un usuario por su token
+router.get('/:user_token', async (ctx) => {
+  try {
+    const user = await ctx.orm.User.findOne({ where: { user_token: ctx.params.user_token } });
+    if (!user) {
+      ctx.body = { error: 'User not found' };
+      ctx.status = 404; // Not Found
+      return;
+    }
+    ctx.body = user;
+    ctx.status = 200; // OK
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 500; // Internal Server Error
+  }
+});
+
 // Crear un nuevo usuario
 router.post('/', async (ctx) => {
   try {

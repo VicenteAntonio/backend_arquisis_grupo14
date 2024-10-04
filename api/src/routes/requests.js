@@ -41,9 +41,6 @@ router.post('requests.create', '/', async (ctx) => {
     // Agregar un log para ver qué valor está recibiendo como deposit_token
     console.log("Valor de deposit_token recibido:", `${deposit_token}`);
 
-    // Verificar si el deposit_token está vacío o undefined
-    
-
     // Hacer la solicitud a la API de usuarios para obtener el wallet
     const userResponse = await axios.get(`${process.env.API_URL}/users/${deposit_token}`);
     const user = userResponse.data;
@@ -69,8 +66,34 @@ router.post('requests.create', '/', async (ctx) => {
       return;
     }
 
-    // Si tiene suficiente dinero, proceder con la creación de la solicitud
-    console.log("Fondos suficientes, creando solicitud...");
+    // Hacer la solicitud a la API de fixtures para obtener el bonusQuantity
+    const fixtureResponse = await axios.get(`${process.env.API_URL}/fixtures/${all_data_request.fixture_id}`);
+    const fixture = fixtureResponse.data;
+
+    if (!fixture) {
+      ctx.body = { error: 'Fixture not found' };
+      ctx.status = 404;
+      return;
+    }
+
+    // Verificar si el bonusQuantity es suficiente
+    const bonusQuantity = fixture.bonusQuantity;
+    console.log(`Bonus quantity for fixture ${all_data_request.fixture_id}: ${bonusQuantity}`);
+
+    if (all_data_request.quantity > bonusQuantity) {
+      console.log("Bonus quantity insuficiente, la solicitud será rechazada");
+
+      // Rechazar la solicitud si no hay suficiente bonusQuantity
+      all_data_request.status = 'rejected';
+
+      let request = await ctx.orm.Request.create(all_data_request);
+      ctx.body = request;
+      ctx.status = 400; // Bad Request
+      return;
+    }
+
+    // Si tiene suficiente bonusQuantity, proceder con la creación de la solicitud
+    console.log("Bonus quantity suficiente, creando solicitud...");
     all_data_request.request_id = uuidv4();
     const userIP = await getUserIP();
     const location = await getLocationFromIP(userIP);
@@ -86,7 +109,7 @@ router.post('requests.create', '/', async (ctx) => {
     await axios.post(process.env.REQUEST_URL, request);
 
     // Actualizar la cantidad del fixture si corresponde
-    const fixture = await findFixtureAndUpdatebonusQuantity(request, ctx);
+    const updatedFixture = await findFixtureAndUpdatebonusQuantity(request, ctx);
 
     ctx.body = request;
     ctx.status = 201; // Created
@@ -96,6 +119,7 @@ router.post('requests.create', '/', async (ctx) => {
     ctx.status = 400;
   }
 });
+
 
 
 

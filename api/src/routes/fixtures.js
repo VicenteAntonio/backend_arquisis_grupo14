@@ -114,6 +114,43 @@ router.get('fixtures.list', '/', async (ctx) => {
     ctx.status = 500;
   }
 });
+router.get('fixtures.findbyids', '/byids', async (ctx) => {
+  try {
+    // Obtener los IDs de la cadena de consulta
+    const fixtureIds = ctx.query.ids.split(',').map(Number); // Convierte a números para evitar problemas con tipos
+    console.log("en la ruta byids los fixtures ids son")
+    console.log(fixtureIds)
+    // Comprobar si se recibieron IDs válidos
+    if (!fixtureIds.length) {
+      ctx.status = 400; // Bad Request
+      ctx.body = { error: 'No fixture IDs provided' };
+      return;
+    }
+
+    console.log("Los fixture IDs son:", fixtureIds);
+
+    // Buscar los fixtures en la base de datos
+    const fixtures = await ctx.orm.Fixture.findAll({
+      where: { fixtureId: fixtureIds }
+    });
+
+    // Comprobar si se encontraron fixtures
+    if (fixtures.length === 0) {
+      ctx.status = 404; // Not Found
+      ctx.body = { error: 'No fixtures found for the provided IDs' };
+      return;
+    }
+
+    // Responder con los fixtures encontrados
+    ctx.body = fixtures;
+    ctx.status = 200; // OK
+  } catch (error) {
+    // Manejo de errores
+    console.error('Error al obtener los fixtures:', error); // Log para depuración
+    ctx.status = 500; // Internal Server Error
+    ctx.body = { error: 'Error al obtener los fixtures' };
+  }
+});
 
 // Endpoint para encontrar partidos según la id de llegada a la base de datos
 // Ejemplo: {url}/fixtures/1
@@ -134,16 +171,6 @@ router.get('fixtures.find', '/:id', async (ctx) => {
     ctx.body = { error: error.message };
     ctx.status = 500;
   }
-});
-router.get('fixtures.findbyids', '/byids', async (ctx) => {
-  const fixtureIds = ctx.query.ids.split(','); // Suponiendo que recibes los IDs como una cadena separada por comas
-
-  const fixtures = await ctx.orm.Fixture.findAll({
-    where: { id: fixtureIds }
-  });
-
-  ctx.body = fixtures;
-  ctx.status = 200;
 });
 
 // Endpoint para encontrar un partido según su fixtureId

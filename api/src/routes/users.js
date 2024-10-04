@@ -15,69 +15,84 @@ router.get('/', async (ctx) => {
   }
 });
 
-// Obtener un usuario por su token
 router.get('/:user_token', async (ctx) => {
   try {
-    const user = await ctx.orm.User.findOne({ where: { user_token: ctx.params.user_token } });
-    const requests = await axios.get(`${process.env.API_URL}/requests`, {
-      params: { deposit_token: depositToken } // Pasando el token como parámetro de consulta
-    });
-    const fixtureIds = requests.map(request => request.fixture_id);
-    const fixtures = await ctx.orm.Fixture.findAll({
-      where: { id: fixtureIds }
-    });
+    const { user_token } = ctx.params;
 
-    let totalAmountToAdd = 0; 
-
-      for (const request of requests) {
-        const fixture = fixtures.find(f => f.id === request.fixtureId);
-        const wonBet = fixture && (
-          (fixture.HomeTeamWinner && request.betOnWinner === 'home') ||
-          (fixture.awayTeamWinner && request.betOnWinner === 'away') ||
-          (fixture.goalsHome === fixture.goalsAway && request.betOnWinner === 'draw')
-        );
-
-        // Si ganó la apuesta, añade dinero a la wallet
-        if (wonBet && !request.reviewed) {
-          // Determinar el monto a añadir según el tipo de apuesta
-          let amountToAdd = 0;
-
-          // Calcular el monto a añadir: quantity * 1000 * odds
-          if (request.betOnWinner === 'home') {
-            amountToAdd = request.quantity * 1000 * fixture.oddsHome; // Ganancia si apostó al equipo local
-          } else if (request.betOnWinner === 'away') {
-            amountToAdd = request.quantity * 1000 * fixture.oddsAway; // Ganancia si apostó al equipo visitante
-          } else if (request.betOnWinner === 'draw') {
-            amountToAdd = request.quantity * 1000 * fixture.oddsDraw; // Ganancia si apostó al empate
-          }
-          if (wonBet) {
-            totalAmountToAdd += amountToAdd;
-          }}
-          await axios.patch(`${process.env.API_URL}/requests/${request.id}`, {
-            reviewed: true // Asumiendo que tienes un atributo `reviewed` en tu request
-          });
-        }
-
-
-      if (totalAmountToAdd > 0) {
-        const userToken = ctx.params.user_token; // Suponiendo que tienes el user_token en el contexto del estado
-        await axios.patch(`${process.env.API_URL}/users/${userToken}`, {
-          amount: totalAmountToAdd, // Monto a añadir
-        });
-      }
-
+    // Buscar al usuario por su token
+    const user = await ctx.orm.User.findOne({ where: { user_token } });
     if (!user) {
       ctx.body = { error: 'User not found' };
       ctx.status = 404; // Not Found
       return;
     }
-    ctx.body = user;
+
+    // Obtener las solicitudes relacionadas con el usuario
+    const requestsResponse = await axios.get(`${process.env.API_URL}/requests`, {
+      params: { deposit_token: user_token } // Cambié depositToken por user_token
+    });
+    const requests = requestsResponse.data; // Asegúrate de que sea un array
+
+    // Extraer los IDs de los fixtures de las solicitudes
+    const fixtureIds = requests.map(request => request.fixture_id).filter(id => id); // Filtra los IDs válidos
+    if (fixtureIds.length === 0) {
+      ctx.body = { message: 'No fixtures found for the user.' };
+      ctx.status = 200; // OK, pero sin resultados
+      return;
+    }
+
+    // Obtener los fixtures relacionados con las apuestas
+    const fixturesResponse = await axios.get(`${process.env.API_URL}/fixtures/byids`, {
+      params: { ids: fixtureIds.join(',') } // Envía los IDs como un string separado por comas
+    });
+    const fixtures = fixturesResponse.data; // Los fixtures obtenidos de la respuesta
+
+    let totalAmountToAdd = 0; 
+
+    for (const request of requests) {
+      const fixture = fixtures.find(f => f.id === request.fixture_id); // Asegúrate de usar el campo correcto
+      const wonBet = fixture && (
+        (fixture.homeTeamWinner && request.betOnWinner === 'home') ||
+        (fixture.awayTeamWinner && request.betOnWinner === 'away') ||
+        (fixture.goalsHome === fixture.goalsAway && request.betOnWinner === 'draw')
+      );
+
+      // Si ganó la apuesta, añade dinero a la wallet
+      if (wonBet && !request.reviewed) {
+        let amountToAdd = 0;
+
+        // Calcular el monto a añadir: quantity * 1000 * odds
+        if (request.betOnWinner === 'home') {
+          amountToAdd = request.quantity * 1000 * fixture.oddsHome; // Ganancia si apostó al equipo local
+        } else if (request.betOnWinner === 'away') {
+          amountToAdd = request.quantity * 1000 * fixture.oddsAway; // Ganancia si apostó al equipo visitante
+        } else if (request.betOnWinner === 'draw') {
+          amountToAdd = request.quantity * 1000 * fixture.oddsDraw; // Ganancia si apostó al empate
+        }
+
+        totalAmountToAdd += amountToAdd; // Sumar al total
+        await axios.patch(`${process.env.API_URL}/requests/${request.id}`, {
+          reviewed: true // Actualizar el estado de la solicitud
+        });
+      }
+    }
+
+    // Actualizar el saldo del usuario si corresponde
+    if (totalAmountToAdd > 0) {
+      await axios.patch(`${process.env.API_URL}/users/${user_token}`, {
+        amount: totalAmountToAdd, // Monto a añadir
+      });
+    }
+
+    ctx.body = user; // Retorna el usuario encontrado
     ctx.status = 200; // OK
   } catch (error) {
+    console.error(error); // Log para la depuración
     ctx.body = { error: error.message };
     ctx.status = 500; // Internal Server Error
   }
 });
+
 
 // Crear un nuevo usuario
 router.post('/', async (ctx) => {

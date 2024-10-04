@@ -38,9 +38,9 @@ function parseFixtureData(fixtureData) {
 async function sendFixtureToAPI(fixture) {
     try {
       const response = await axios.put(`${process.env.API_URL}/fixtures/history`, fixture);  // Asegúrate de que la ruta en la API sea la correcta
-      console.log('Fixture history sent to API: ', response.data);
+      console.log('Fixture history sent to API: ', response);
     } catch (error) {
-      console.error('Error sending fixture history to API: ', error);
+      console.error('Error sending fixture history to API: ', error.response.data);
     }
 }
 
@@ -51,12 +51,12 @@ client.on('message', (topic, message) => {
       const fixtureList = parseFixtureData(fixtureData);
       sendFixtureToAPI(fixtureList);
     } catch (error) {
-      console.error('Error parsing message or sending fixture to API: ', error);
+      console.error('Error parsing message or sending fixture to API: ', error.response.data);
     }
 });
 
 client.on('error', (error) => {
-    console.error('Error connecting to MQTT broker: ', error);
+    console.error('Error connecting to MQTT broker: ', error.response.data);
 });
 
 module.exports = client;

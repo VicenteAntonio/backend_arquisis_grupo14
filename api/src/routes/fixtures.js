@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const moment = require('moment-timezone');
 const { Op } = require('sequelize');
+const axios = require('axios'); 
 
 const router = new Router();
 
@@ -134,6 +135,16 @@ router.get('fixtures.find', '/:id', async (ctx) => {
     ctx.status = 500;
   }
 });
+router.get('fixtures.findbyids', '/byids', async (ctx) => {
+  const fixtureIds = ctx.query.ids.split(','); // Suponiendo que recibes los IDs como una cadena separada por comas
+
+  const fixtures = await ctx.orm.Fixture.findAll({
+    where: { id: fixtureIds }
+  });
+
+  ctx.body = fixtures;
+  ctx.status = 200;
+});
 
 // Endpoint para encontrar un partido según su fixtureId
 // Ejemplo: {url}/fixtures/fixture/1
@@ -184,6 +195,10 @@ router.put('fixtures.updateHistory', '/history', async (ctx) => {
     }
     await Promise.all(ctx.request.body.fixtures.map(async (receivedfixture) => {
       let fixturesToUpdate = {};
+      console.log("se está revisando una history")
+      console.log("los goles son:")
+      console.log("home" + receivedfixture.goals.home)
+      console.log("away" + receivedfixture.goals.away)
       if ( receivedfixture.goals.home > receivedfixture.goals.away){
          fixturesToUpdate = {
           fixtureId: receivedfixture.fixture.id,
@@ -192,7 +207,7 @@ router.put('fixtures.updateHistory', '/history', async (ctx) => {
           fixtureStatus: receivedfixture.fixture.status,
           goalsHome: receivedfixture.goals.home,
           goalsAway: receivedfixture.goals.away,
-          HomeTeamWinner: true,
+          homeTeamWinner: true,
           awayTeamWinner: false
         };
       }
@@ -204,7 +219,7 @@ router.put('fixtures.updateHistory', '/history', async (ctx) => {
           fixtureStatus: receivedfixture.fixture.status,
           goalsHome: receivedfixture.goals.home,
           goalsAway: receivedfixture.goals.away,
-          HomeTeamWinner: false,
+          homeTeamWinner: false,
           awayTeamWinner: true
         };
       }
@@ -216,17 +231,38 @@ router.put('fixtures.updateHistory', '/history', async (ctx) => {
           fixtureStatus: receivedfixture.fixture.status,
           goalsHome: receivedfixture.goals.home,
           goalsAway: receivedfixture.goals.away,
-          HomeTeamWinner: false,
+          homeTeamWinner: false,
           awayTeamWinner: false 
         };
       }
 
-      // Ver si alguno de los partidos esta presente en la base de datos y si fixtureId coincide con el de la base de datos, actualiza los datos respectivos
-      const fixture = await ctx.orm.Fixture.findOne({
-        where: { fixtureId: fixturesToUpdate.fixtureId },
-      });
-      if (fixture) {
-        await fixture.update(fixturesToUpdate);
+      try {
+        const response = await axios.get(`${process.env.API_URL}/fixtures/${fixturesToUpdate.fixtureId}`);
+        const fixture = response.data;
+    
+        console.log(`Fixture encontrada`);
+        console.log(fixture);
+    
+        if (fixture) {
+          console.log("El partido está presente");
+          try {
+            const response = await axios.patch(`${process.env.API_URL}/fixtures/${receivedfixture.fixture.id}`, fixturesToUpdate);
+            
+            if (response.status === 200) {
+              console.log(`Partido actualizado exitosamente`);
+            } else {
+              console.log(`Error al actualizar el partido`);
+            }
+          } catch (error) {
+            console.error(`Error al hacer PATCH al fixture`);
+            ctx.body = { error: error.message };
+            ctx.status = 400; // Bad Request
+          }
+        } else {
+          console.log("El partido no está presente");
+        }
+      } catch (error) {
+        console.error(`Error fetching fixture`, error.message);
       }
     }));
 

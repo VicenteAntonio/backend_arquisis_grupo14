@@ -20,7 +20,7 @@ Este proyecto se centra en la implementación del backend para el dominio `grupo
 ### Postgres
 
 1. Inicializar psql: `sudo -u postgres psql`
-2. Crear usuario de postgres `sudo -u postgres createuser --superuser [POSTGRES_USER]:`
+2. Crear usuario de postgres `sudo -u postgres createuser --superuser [POSTGRES_USER];`
 3. Crear base de datos: `sudo -u postgres createdb [DB_NAME]`
 4. Crear clave del usuario: `ALTER USER [POSTGRES_USER] WITH PASSWORD 'POSTGRES_PASSWORD';` (correr dentro del entorno de postgres)
 5. Conectarse a la BD: `psql -U [POSTGRES_USER] -d [DB_NAME] -h`
@@ -129,7 +129,7 @@ VALIDATION_PORT = 9000
 
 ## Conexión con Frontend (Local) 
 
-### PARA EL GRUPO 11: creo que este es el plan para conectar backend y frontend, hablar el lunes. 
+### PARA EL GRUPO 14: creo que este es el plan para conectar backend y frontend, hablar el lunes. 
 
 ### Variables de entorno
 Para establecer conexión entre el backend y el frontend, se debe crear un archivo `.env` en la raíz del proyecto de frontend con las siguientes variables:
@@ -148,14 +148,112 @@ BACKEND_URL = <backend_url>
 1. Instalar dependencias: `yarn install` / `yarn`
 2. Levantar servidor: `yarn start` / `yarn dev`
 
-## Pipeline CI (GitHub Actions)
+#### Pasos para replicar Pipeline CI (Backend)
 
-* Servicio a utilizar: CircleCI
+1. Crear un archivo `.yml` dentro de la carpeta `.github/workflows` en el repositorio con el siguiente contenido:
+```yml
+name: CI/CD Pipeline
 
-## Puntos Logrados y No Logrados
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
 
-### Puntos Logrados
+  push:
+    branches:
+      - main
+      - develop
 
-- Implementación exitosa de la estructura de la base de datos.
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
 
-### Puntos No Logrados
+    strategy:
+      matrix:
+        project: [api, listener, requests, validations, history]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd ${{ matrix.project }}
+          yarn install
+
+      - name: Lint with yarn
+        run: |
+          cd ${{ matrix.project }}
+          yarn lint
+
+      - name: echo
+        run: echo "Linting complete!"
+```
+* Este archivo sigue los siguientes pasos:
+  1. Se ejecuta en cada pull request a las ramas `main` y `develop`.
+  2. Se define el trabajo `Lint` que corre en una máquina virtual de ubuntu.
+  3. Se define una matriz que permite ejecutar los pasos del trabajo en paralelo para cada proyecto.
+  4. Se verifica el código del repositorio.
+  5. Se configura Node.js.
+  6. Se instalan las dependencias del proyecto en cada proyecto.
+  7. Se corre el linter en cada proyecto.
+  8. Se imprime un mensaje en consola al finalizar el linter.
+
+2. Agregar ESLint a cada proyecto corriendo los siguientes comandos:
+`yarn add eslint@8 --dev`
+`yarn add eslint-plugin-import --dev`
+`yarn add eslint-config-airbnb-base --dev`
+3. Crear un archivo `.eslintrc.js` en la raíz de cada proyecto y agregar configuración y reglas de ESLint.
+4. Agregar los scripts de linter en el `package.json` de cada proyecto:
+```json
+"scripts": {
+  "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+}
+```
+5. Crear un pull request a las ramas `main` o `develop` y verificar que el pipeline de CI se ejecute correctamente.
+
+#### Pasos para replicar Pipeline CI (Frontend)
+
+* Para replicar el pipeline de CI en el frontend, se debe seguir los mismos pasos anteriores, pero con las siguientes modificaciones:
+  1. En el archivo `.yml` de Github Actions, se debe omitir el paso de la matriz, ya que es un solo proyecto.
+  2. Instalar ESLint en el repositorio con los comandos anteriores.
+  3. Se debe agregar el archivo `.eslintrc.config.mjs` en la raíz del repositorio.
+  4. Se debe agregar los scripts de linter en el `package.json` del repositorio.
+
+### Requisitos logrados
+
+#### Requisitos funcionales
+
+* RF01
+* RF02
+* RF03 
+* RF05
+* RF06
+* RF07
+* RF08
+* RF09
+* RF10
+* RF11
+
+#### Requisitos no funcionales
+
+* RNF01
+* RNF02
+* RNF03 
+
+* RNF06
+* RNF09 
+
+
+### Documentación 
+
+* RDOC01
+* RDOC02
+* RDOC03

@@ -1,9 +1,11 @@
 listener/node_modules
 api/node_modules
-requests/node_modules
+request/node_modules
 validations/node_modules
+history/node_modules
 /node_modules
 node_modules
+**/node_modules/
 .DS_Store
 .env
 **/.env

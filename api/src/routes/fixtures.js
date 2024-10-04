@@ -183,6 +183,7 @@ router.put('fixtures.updateHistory', '/history', async (ctx) => {
       return;
     }
     await Promise.all(ctx.request.body.fixtures.map(async (receivedfixture) => {
+      // imprime uno por uno los partidos que se van a actualizar
       const fixturesToUpdate = {
         fixtureId: receivedfixture.fixture.id,
         fixtureReferee: receivedfixture.fixture.referee,

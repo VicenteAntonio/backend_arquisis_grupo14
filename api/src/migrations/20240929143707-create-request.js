@@ -33,6 +33,9 @@ module.exports = {
       result: {
         type: Sequelize.STRING
       },
+      reviewed: {
+        type: Sequelize.BOOLEAN
+      },
       deposit_token: {
         type: Sequelize.STRING
       },

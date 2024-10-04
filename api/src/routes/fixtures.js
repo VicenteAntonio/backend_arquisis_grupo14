@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const moment = require('moment-timezone');
 const { Op } = require('sequelize');
+const axios = require('axios'); 
 
 const router = new Router();
 
@@ -113,6 +114,43 @@ router.get('fixtures.list', '/', async (ctx) => {
     ctx.status = 500;
   }
 });
+router.get('fixtures.findbyids', '/byids', async (ctx) => {
+  try {
+    // Obtener los IDs de la cadena de consulta
+    const fixtureIds = ctx.query.ids.split(',').map(Number); // Convierte a números para evitar problemas con tipos
+    console.log("en la ruta byids los fixtures ids son")
+    console.log(fixtureIds)
+    // Comprobar si se recibieron IDs válidos
+    if (!fixtureIds.length) {
+      ctx.status = 400; // Bad Request
+      ctx.body = { error: 'No fixture IDs provided' };
+      return;
+    }
+
+    console.log("Los fixture IDs son:", fixtureIds);
+
+    // Buscar los fixtures en la base de datos
+    const fixtures = await ctx.orm.Fixture.findAll({
+      where: { fixtureId: fixtureIds }
+    });
+
+    // Comprobar si se encontraron fixtures
+    if (fixtures.length === 0) {
+      ctx.status = 404; // Not Found
+      ctx.body = { error: 'No fixtures found for the provided IDs' };
+      return;
+    }
+
+    // Responder con los fixtures encontrados
+    ctx.body = fixtures;
+    ctx.status = 200; // OK
+  } catch (error) {
+    // Manejo de errores
+    console.error('Error al obtener los fixtures:', error); // Log para depuración
+    ctx.status = 500; // Internal Server Error
+    ctx.body = { error: 'Error al obtener los fixtures' };
+  }
+});
 
 // Endpoint para encontrar partidos según la id de llegada a la base de datos
 // Ejemplo: {url}/fixtures/1
@@ -183,22 +221,75 @@ router.put('fixtures.updateHistory', '/history', async (ctx) => {
       return;
     }
     await Promise.all(ctx.request.body.fixtures.map(async (receivedfixture) => {
-      const fixturesToUpdate = {
-        fixtureId: receivedfixture.fixture.id,
-        fixtureReferee: receivedfixture.fixture.referee,
-        fixtureTimezone: receivedfixture.fixture.timezone,
-        fixtureDate: receivedfixture.fixture.date,
-        fixtureTimestamp: receivedfixture.fixture.timestamp,
-        fixtureStatus: receivedfixture.fixture.status,
-        goalsHome: receivedfixture.goals.home,
-        goalsAway: receivedfixture.goals.away,
-      };
-      // Ver si alguno de los partidos esta presente en la base de datos y si fixtureId coincide con el de la base de datos, actualiza los datos respectivos
-      const fixture = await ctx.orm.Fixture.findOne({
-        where: { fixtureId: fixturesToUpdate.fixtureId },
-      });
-      if (fixture) {
-        await fixture.update(fixturesToUpdate);
+      let fixturesToUpdate = {};
+      console.log("se está revisando una history")
+      console.log("los goles son:")
+      console.log("home" + receivedfixture.goals.home)
+      console.log("away" + receivedfixture.goals.away)
+      if ( receivedfixture.goals.home > receivedfixture.goals.away){
+         fixturesToUpdate = {
+          fixtureId: receivedfixture.fixture.id,
+          fixtureReferee: receivedfixture.fixture.referee,
+          fixtureTimezone: receivedfixture.fixture.timezone,
+          fixtureStatus: receivedfixture.fixture.status,
+          goalsHome: receivedfixture.goals.home,
+          goalsAway: receivedfixture.goals.away,
+          homeTeamWinner: true,
+          awayTeamWinner: false
+        };
+      }
+      else if (receivedfixture.goals.home < receivedfixture.goals.away){
+        fixturesToUpdate = {
+          fixtureId: receivedfixture.fixture.id,
+          fixtureReferee: receivedfixture.fixture.referee,
+          fixtureTimezone: receivedfixture.fixture.timezone,
+          fixtureStatus: receivedfixture.fixture.status,
+          goalsHome: receivedfixture.goals.home,
+          goalsAway: receivedfixture.goals.away,
+          homeTeamWinner: false,
+          awayTeamWinner: true
+        };
+      }
+      else if (receivedfixture.goals.home == receivedfixture.goals.away){
+         fixturesToUpdate = {
+          fixtureId: receivedfixture.fixture.id,
+          fixtureReferee: receivedfixture.fixture.referee,
+          fixtureTimezone: receivedfixture.fixture.timezone,
+          fixtureStatus: receivedfixture.fixture.status,
+          goalsHome: receivedfixture.goals.home,
+          goalsAway: receivedfixture.goals.away,
+          homeTeamWinner: false,
+          awayTeamWinner: false 
+        };
+      }
+
+      try {
+        const response = await axios.get(`${process.env.API_URL}/fixtures/${fixturesToUpdate.fixtureId}`);
+        const fixture = response.data;
+    
+        console.log(`Fixture encontrada`);
+        console.log(fixture);
+    
+        if (fixture) {
+          console.log("El partido está presente");
+          try {
+            const response = await axios.patch(`${process.env.API_URL}/fixtures/${receivedfixture.fixture.id}`, fixturesToUpdate);
+            
+            if (response.status === 200) {
+              console.log(`Partido actualizado exitosamente`);
+            } else {
+              console.log(`Error al actualizar el partido`);
+            }
+          } catch (error) {
+            console.error(`Error al hacer PATCH al fixture`);
+            ctx.body = { error: error.message };
+            ctx.status = 400; // Bad Request
+          }
+        } else {
+          console.log("El partido no está presente");
+        }
+      } catch (error) {
+        console.error(`Error fetching fixture`, error.message);
       }
     }));
 

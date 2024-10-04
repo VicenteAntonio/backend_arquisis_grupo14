@@ -207,4 +207,16 @@ router.get('requests.list', '/', async (ctx) => {
   }
 });
 
+router.get('requests.all', '/list_all', async (ctx) => {
+  try {
+      const requests = await ctx.orm.Request.findAll({
+      });
+      ctx.body = requests;
+      ctx.status = 200;
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 500;
+  }
+})
+
 module.exports = router;

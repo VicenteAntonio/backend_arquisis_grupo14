@@ -19,6 +19,53 @@ router.get('/', async (ctx) => {
 router.get('/:user_token', async (ctx) => {
   try {
     const user = await ctx.orm.User.findOne({ where: { user_token: ctx.params.user_token } });
+    const requests = await axios.get(`${process.env.API_URL}/requests`, {
+      params: { deposit_token: depositToken } // Pasando el token como parámetro de consulta
+    });
+    const fixtureIds = requests.map(request => request.fixture_id);
+    const fixtures = await ctx.orm.Fixture.findAll({
+      where: { id: fixtureIds }
+    });
+
+    let totalAmountToAdd = 0; 
+
+      for (const request of requests) {
+        const fixture = fixtures.find(f => f.id === request.fixtureId);
+        const wonBet = fixture && (
+          (fixture.HomeTeamWinner && request.betOnWinner === 'home') ||
+          (fixture.awayTeamWinner && request.betOnWinner === 'away') ||
+          (fixture.goalsHome === fixture.goalsAway && request.betOnWinner === 'draw')
+        );
+
+        // Si ganó la apuesta, añade dinero a la wallet
+        if (wonBet && !request.reviewed) {
+          // Determinar el monto a añadir según el tipo de apuesta
+          let amountToAdd = 0;
+
+          // Calcular el monto a añadir: quantity * 1000 * odds
+          if (request.betOnWinner === 'home') {
+            amountToAdd = request.quantity * 1000 * fixture.oddsHome; // Ganancia si apostó al equipo local
+          } else if (request.betOnWinner === 'away') {
+            amountToAdd = request.quantity * 1000 * fixture.oddsAway; // Ganancia si apostó al equipo visitante
+          } else if (request.betOnWinner === 'draw') {
+            amountToAdd = request.quantity * 1000 * fixture.oddsDraw; // Ganancia si apostó al empate
+          }
+          if (wonBet) {
+            totalAmountToAdd += amountToAdd;
+          }}
+          await axios.patch(`${process.env.API_URL}/requests/${request.id}`, {
+            reviewed: true // Asumiendo que tienes un atributo `reviewed` en tu request
+          });
+        }
+
+
+      if (totalAmountToAdd > 0) {
+        const userToken = ctx.params.user_token; // Suponiendo que tienes el user_token en el contexto del estado
+        await axios.patch(`${process.env.API_URL}/users/${userToken}`, {
+          amount: totalAmountToAdd, // Monto a añadir
+        });
+      }
+
     if (!user) {
       ctx.body = { error: 'User not found' };
       ctx.status = 404; // Not Found

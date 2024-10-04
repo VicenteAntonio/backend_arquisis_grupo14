@@ -183,16 +183,44 @@ router.put('fixtures.updateHistory', '/history', async (ctx) => {
       return;
     }
     await Promise.all(ctx.request.body.fixtures.map(async (receivedfixture) => {
-      const fixturesToUpdate = {
-        fixtureId: receivedfixture.fixture.id,
-        fixtureReferee: receivedfixture.fixture.referee,
-        fixtureTimezone: receivedfixture.fixture.timezone,
-        fixtureDate: receivedfixture.fixture.date,
-        fixtureTimestamp: receivedfixture.fixture.timestamp,
-        fixtureStatus: receivedfixture.fixture.status,
-        goalsHome: receivedfixture.goals.home,
-        goalsAway: receivedfixture.goals.away,
-      };
+      let fixturesToUpdate = {};
+      if ( receivedfixture.goals.home > receivedfixture.goals.away){
+         fixturesToUpdate = {
+          fixtureId: receivedfixture.fixture.id,
+          fixtureReferee: receivedfixture.fixture.referee,
+          fixtureTimezone: receivedfixture.fixture.timezone,
+          fixtureStatus: receivedfixture.fixture.status,
+          goalsHome: receivedfixture.goals.home,
+          goalsAway: receivedfixture.goals.away,
+          HomeTeamWinner: true,
+          awayTeamWinner: false
+        };
+      }
+      else if (receivedfixture.goals.home < receivedfixture.goals.away){
+        fixturesToUpdate = {
+          fixtureId: receivedfixture.fixture.id,
+          fixtureReferee: receivedfixture.fixture.referee,
+          fixtureTimezone: receivedfixture.fixture.timezone,
+          fixtureStatus: receivedfixture.fixture.status,
+          goalsHome: receivedfixture.goals.home,
+          goalsAway: receivedfixture.goals.away,
+          HomeTeamWinner: false,
+          awayTeamWinner: true
+        };
+      }
+      else if (receivedfixture.goals.home == receivedfixture.goals.away){
+         fixturesToUpdate = {
+          fixtureId: receivedfixture.fixture.id,
+          fixtureReferee: receivedfixture.fixture.referee,
+          fixtureTimezone: receivedfixture.fixture.timezone,
+          fixtureStatus: receivedfixture.fixture.status,
+          goalsHome: receivedfixture.goals.home,
+          goalsAway: receivedfixture.goals.away,
+          HomeTeamWinner: false,
+          awayTeamWinner: false 
+        };
+      }
+
       // Ver si alguno de los partidos esta presente en la base de datos y si fixtureId coincide con el de la base de datos, actualiza los datos respectivos
       const fixture = await ctx.orm.Fixture.findOne({
         where: { fixtureId: fixturesToUpdate.fixtureId },

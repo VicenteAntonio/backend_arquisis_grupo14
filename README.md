@@ -2,16 +2,15 @@
 
 ## Información del Proyecto
 
-Este proyecto se centra en la implementación del backend para el dominio `grupo14arquisis.me`. Aquí encontrarás detalles sobre las funcionalidades implementadas, la estructura de la base de datos y otros aspectos importantes del desarrollo.
+Este proyecto se centra en la implementación del backend para el dominio `web.grupo14arquisis.me`. Aquí encontrarás detalles sobre las funcionalidades implementadas, la estructura de la base de datos y otros aspectos importantes del desarrollo.
 
 ## Consideraciones Generales
 
 - En la base de datos, el arreglo `requests` asociado al modelo `User` contiene los `request_id` de las solicitudes generadas por el usuario.
 -Se utilizó Node.js con Koa para desarrollar la API.
 - La base de datos fue instanciada y conectada usando Sequelize como ORM. 
-- URL de Instancia EC2:
-- URL de API Gateway:
-- URL de frontend: 
+- IP de Instancia EC2: 52.71.13.245
+- API Gateway: api.grupo14arquisis.me 
 
 ## Documentación de la API
 
@@ -27,7 +26,7 @@ Este proyecto se centra en la implementación del backend para el dominio `grupo
 
 ### Dominio
 
-- **Nombre del Dominio**: `grupo14arquisis.me`
+- **Nombre del Dominio**: `web.grupo14arquisis.me`
 
 ### Entorno Local
 
@@ -157,5 +156,3 @@ BACKEND_URL = <backend_url>
 ### Puntos Logrados
 
 - Implementación exitosa de la estructura de la base de datos.
-
-### Puntos No Logrados

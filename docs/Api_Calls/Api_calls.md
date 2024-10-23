@@ -4,4 +4,4 @@
 
 ## Llamadas por parte de otros servicios 
 
-## Detalles adicionales 
+## Detalles extras

@@ -87,7 +87,7 @@ client.on('message', (topic, message) => {
     // Send request to API
     // Guardar en una base de datos las request, ver validacion y manejar
   } catch (error) {
-    console.error('Error sending request to broker:', error);
+    console.error('Error sending request to broker:', error.response.data);
   }
 });
 

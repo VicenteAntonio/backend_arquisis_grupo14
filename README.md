@@ -129,8 +129,6 @@ VALIDATION_PORT = 9000
 
 ## Conexión con Frontend (Local) 
 
-### PARA EL GRUPO 14: creo que este es el plan para conectar backend y frontend, hablar el lunes. 
-
 ### Variables de entorno
 Para establecer conexión entre el backend y el frontend, se debe crear un archivo `.env` en la raíz del proyecto de frontend con las siguientes variables:
 ```
@@ -226,34 +224,3 @@ jobs:
   2. Instalar ESLint en el repositorio con los comandos anteriores.
   3. Se debe agregar el archivo `.eslintrc.config.mjs` en la raíz del repositorio.
   4. Se debe agregar los scripts de linter en el `package.json` del repositorio.
-
-### Requisitos logrados
-
-#### Requisitos funcionales
-
-* RF01
-* RF02
-* RF03 
-* RF05
-* RF06
-* RF07
-* RF08
-* RF09
-* RF10
-* RF11
-
-#### Requisitos no funcionales
-
-* RNF01
-* RNF02
-* RNF03 
-
-* RNF06
-* RNF09 
-
-
-### Documentación 
-
-* RDOC01
-* RDOC02
-* RDOC03

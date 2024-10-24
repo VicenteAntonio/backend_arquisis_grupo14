@@ -28,7 +28,7 @@ const sequelize = new Sequelize(
 // Primero, se obtiene el resultado de todas las compras de un usuario
 
 async function getAllPurchasesResults(username) {
-    
+
   }
 
 // Luego, se obtienen los partidos de los equipos que estaban involucrados en todas sus compras (importante que aparezcan por liga)
@@ -51,31 +51,13 @@ async function calculatePonderation(asserts, round, odds){
 
 async function processor(job) {
     try {
-      const { fixture, username, ipAddress} = job.data;
-      console.log(`Processing job for user ${username}`);
-  
-      const ipCoord = await getIpLocation(ipAddress);
-      const { arrivalAirport, arrivalTime } = await getLastFlightInfo(flight);
-      const latestFlights = await get20LatestFlights(arrivalAirport, arrivalTime);
-      const flightsWithCoords = await processFlights(latestFlights);
-  
-      const recommendations = await Promise.all(
-        flightsWithCoords.map(async (flight) => {
-          const distance = await calculateDistance(ipCoord, flight.arrivalCoords);
-          const { price } = flight;
-          const pond = distance / price;
-  
-          return { flight, pond };
-        }),
-      );
-  
       const sortedRecommendations = recommendations
         .sort((a, b) => b.pond - a.pond)
         .slice(0, 3);
   
       await Promise.all(
         recommendations.map(async (recommendation) => {
-          await saveRecommendation(username, recommendation.flight.id);
+          await saveRecommendation(username, recommendation.fixture.id);
         }),
       );
   

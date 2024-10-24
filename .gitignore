@@ -3,6 +3,8 @@ api/node_modules
 request/node_modules
 validations/node_modules
 history/node_modules
+recommendation_service/jobsMaster/node_modules
+recommendation_service/workers/node_modules
 /node_modules
 node_modules
 **/node_modules/

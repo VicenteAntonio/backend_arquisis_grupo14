@@ -12,3 +12,5 @@ grupo14arquisis.pem
 /api/.env
 /api/node_modules
 ./validations/node_modules
+./history/node_modules
+./listener/node_modules

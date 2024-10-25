@@ -32,6 +32,7 @@ async function getLocationFromIP(ip) {
 router.post('requests.create', '/', async (ctx) => {
   try {
     console.log("En post de create de la API");
+    
 
     const all_data_request = ctx.request.body;
     
@@ -42,21 +43,27 @@ router.post('requests.create', '/', async (ctx) => {
 
     // Agregar un log para ver qué valor está recibiendo como user_token
     console.log("Valor de user_token recibido:", `${user_token}`);
+    let user;
 
-    // Hacer la solicitud a la API de usuarios para obtener el wallet
-    const userResponse = await axios.get(`${process.env.API_URL}/users/${user_token}`);
-    const user = userResponse.data;
-
-    //if (!user) {
-    //  ctx.body = { error: 'User not found' };
-    //  ctx.status = 404;
-    //  return;
-    //}
+    if (user_token !== undefined) {
+      // Hacer la solicitud a la API de usuarios para obtener el wallet
+      try {
+          const userResponse = await axios.get(`${process.env.API_URL}/users/${user_token}`);
+          user = userResponse.data;
+          // Aquí puedes manejar los datos del usuario
+      } catch (error) {
+          console.error("Error al obtener el usuario:", error);
+          // Maneja el error aquí, por ejemplo, devolviendo una respuesta de error
+      }
+    }
 
     // Verificar si el wallet es suficiente
     const totalAmountRequired = all_data_request.quantity * 1000;
 
+    console.log("estoy aqui 1")
+    // si lo hicimos nosotros
     if (user){
+      console.log("se encontró al usuario")
       if (totalAmountRequired > user.wallet) {
         console.log("Fondos insuficientes, la solicitud será rechazada");
         
@@ -65,21 +72,26 @@ router.post('requests.create', '/', async (ctx) => {
   
         let request = await ctx.orm.Request.create(all_data_request);
         ctx.body = request;
-        ctx.status = 400; // Bad Request
+        ctx.status = 200; // Bad Request
         return;
       }
     }
-    
+
+    console.log("estoy aqui 2")
+  
 
     // Hacer la solicitud a la API de fixtures para obtener el bonusQuantity
     const fixtureResponse = await axios.get(`${process.env.API_URL}/fixtures/${all_data_request.fixture_id}`);
     const fixture = fixtureResponse.data;
 
     if (!fixture) {
+      console.log("no se encuentra la fixture")
       ctx.body = { error: 'Fixture not found' };
       ctx.status = 404;
       return;
     }
+
+    console.log("estoy aqui 3")
 
     // Verificar si el bonusQuantity es suficiente
     const bonusQuantity = fixture.bonusQuantity;
@@ -108,11 +120,17 @@ router.post('requests.create', '/', async (ctx) => {
     all_data_request.seller = 0;
 
     // Crear la request
-    console.log("se creará la request en la base de datos")
+    console.log("se creará la request pending en la base de datos")
     let request = await ctx.orm.Request.create(all_data_request);
 
     // Hacer el POST a otra URL si es necesario
-    await axios.post(process.env.REQUEST_URL, request);
+    console.log("se verá si se va a enviar al broker")
+    if (user_token !== undefined){
+      console.log("se enviará al broker")
+      await axios.post(process.env.REQUEST_URL, request);
+    }
+    console.log(" no se enviará al broker")
+   
 
     // Actualizar la cantidad del fixture si corresponde
     const updatedFixture = await findFixtureAndUpdatebonusQuantity(request, ctx);

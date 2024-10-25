@@ -200,17 +200,36 @@ async function calculatePonderation(asserts, round, odds) {
 
 async function processor(job) {
   try {
+    const username = job.data.username; // username
+    const purchases = await getAllPurchasesResults(username); // obtener todas las compras de un usuario
+
+    const matches = await getMatchesByTeams(purchases); // obtener los partidos de los equipos que estaban involucrados en todas sus compras
+
+    const asserts = await calculateAsserts(username, matches); // calcular cuantas veces ha acertado en todas las apuestas a los resultados
+
+    const odds = await axios.get(
+      `${process.env.ODDS_SERVICE_URL}/odds?league=${league}`
+    ); // obtener las probabilidades de los partidos
+
+    const round = 1; // round de la liga
+
+    const recommendations = await calculatePonderation(asserts, round, odds); // calcular los beneficios de los partidos para cada liga
+
     const sortedRecommendations = recommendations
       .sort((a, b) => b.pond - a.pond)
-      .slice(0, 3);
+      .slice(0, 3); // ordenar los partidos por beneficios y devolver los primeros 3
 
-    await Promise.all(
-      recommendations.map(async (recommendation) => {
-        await saveRecommendation(username, recommendation.fixture.id);
-      })
-    );
+      return sortedRecommendations;
+    // const sortedRecommendations = recommendations
+    //   .sort((a, b) => b.pond - a.pond)
+    //   .slice(0, 3);
 
-    return sortedRecommendations;
+    // await Promise.all(
+    //   recommendations.map(async (recommendation) => {
+    //     await saveRecommendation(username, recommendation.fixture.id);
+    //   })
+    // );
+
   } catch (error) {
     console.log(`Error processing job: ${error.message}`);
     throw error;

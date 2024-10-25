@@ -10,7 +10,7 @@ services:
     ports:
       - '3000:3000'
     networks:
-      - app-networks
+      - app-network
     depends_on:
       - db
     env_file:
@@ -20,7 +20,7 @@ services:
     image: postgres
     container_name: postgres
     networks:
-      - app-networks
+      - app-network
     volumes:
       - db-volume:/var/lib/postgresql/data
     env_file:
@@ -37,7 +37,7 @@ services:
     volumes:
       - ./listener:/app
     networks:
-      - app-networks
+      - app-network
     depends_on:
       - api
     env_file:
@@ -45,18 +45,18 @@ services:
 
   history:
     build:
-      context: ./history # Directorio donde se encuentra tu Dockerfile y código para history
-      dockerfile: Dockerfile # Nombre del Dockerfile en el directorio ./history
-    container_name: history # Nombre del contenedor
+      context: ./history
+      dockerfile: Dockerfile
+    container_name: history
     restart: unless-stopped
     volumes:
-      - ./history:/app # Volumen que mapea el código de history
+      - ./history:/app
     networks:
-      - app-networks
+      - app-network
     depends_on:
-      - api # Este servicio depende del servicio api
+      - api
     env_file:
-      - ./history/.env # Archivo de variables de entorno para el servicio history
+      - ./history/.env
 
   requests:
     build:
@@ -69,7 +69,7 @@ services:
     ports:
       - '8000:8000'
     networks:
-      - app-networks
+      - app-network
     depends_on:
       - api
     env_file:
@@ -86,7 +86,7 @@ services:
     ports:
       - '9000:9000'
     networks:
-      - app-networks
+      - app-network
     depends_on:
       - api
     env_file:
@@ -94,12 +94,12 @@ services:
 
   jobs-master:
     build:
-      context: ./recommendation-service/jobsMaster
+      context: ./recommendation_service/jobs-master
       dockerfile: Dockerfile
     container_name: jobs-master
     restart: unless-stopped
     volumes:
-      - ./recommendation-service/jobsMaster:/app
+      - ./recommendation_service/jobs-master:/app
     ports:
       - '4000:4000'
     networks:
@@ -108,7 +108,7 @@ services:
     depends_on:
       - redis
     env_file:
-      - ./recommendation_service/jobsMaster/.env
+      - ./recommendation_service/jobs-master/.env
     environment:
       - REDIS_PORT=6379
       - REDIS_HOST=redis
@@ -146,7 +146,9 @@ services:
       - ./.env
 
 networks:
-  app-networks:
+  app-network:
+    driver: bridge
+  worker:
     driver: bridge
 
 volumes:

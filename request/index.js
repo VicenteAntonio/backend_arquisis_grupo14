@@ -106,6 +106,7 @@ async function sendRequestToBroker(request) {
         datetime : request.datetime,
         quantity: request.quantity,
         seller: 0,
+        wallet: true
     };
   
     // Cambiar formato de fecha

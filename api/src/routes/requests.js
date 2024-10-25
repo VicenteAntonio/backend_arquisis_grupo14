@@ -35,36 +35,41 @@ router.post('requests.create', '/', async (ctx) => {
 
     const all_data_request = ctx.request.body;
     
-    // Obtener el deposit_token
-    const deposit_token = all_data_request.deposit_token;
+    // Obtener el user_token
+    const user_token = all_data_request.user_token;
 
-    // Agregar un log para ver qué valor está recibiendo como deposit_token
-    console.log("Valor de deposit_token recibido:", `${deposit_token}`);
+    console.log("Datos recibidos en el body:", all_data_request);
+
+    // Agregar un log para ver qué valor está recibiendo como user_token
+    console.log("Valor de user_token recibido:", `${user_token}`);
 
     // Hacer la solicitud a la API de usuarios para obtener el wallet
-    const userResponse = await axios.get(`${process.env.API_URL}/users/${deposit_token}`);
+    const userResponse = await axios.get(`${process.env.API_URL}/users/${user_token}`);
     const user = userResponse.data;
 
-    if (!user) {
-      ctx.body = { error: 'User not found' };
-      ctx.status = 404;
-      return;
-    }
+    //if (!user) {
+    //  ctx.body = { error: 'User not found' };
+    //  ctx.status = 404;
+    //  return;
+    //}
 
     // Verificar si el wallet es suficiente
     const totalAmountRequired = all_data_request.quantity * 1000;
 
-    if (totalAmountRequired > user.wallet) {
-      console.log("Fondos insuficientes, la solicitud será rechazada");
-      
-      // Rechazar la solicitud si no tiene suficientes fondos
-      all_data_request.status = 'rejected';
-
-      let request = await ctx.orm.Request.create(all_data_request);
-      ctx.body = request;
-      ctx.status = 400; // Bad Request
-      return;
+    if (user){
+      if (totalAmountRequired > user.wallet) {
+        console.log("Fondos insuficientes, la solicitud será rechazada");
+        
+        // Rechazar la solicitud si no tiene suficientes fondos
+        all_data_request.status = 'rejected';
+  
+        let request = await ctx.orm.Request.create(all_data_request);
+        ctx.body = request;
+        ctx.status = 400; // Bad Request
+        return;
+      }
     }
+    
 
     // Hacer la solicitud a la API de fixtures para obtener el bonusQuantity
     const fixtureResponse = await axios.get(`${process.env.API_URL}/fixtures/${all_data_request.fixture_id}`);
@@ -88,7 +93,7 @@ router.post('requests.create', '/', async (ctx) => {
 
       let request = await ctx.orm.Request.create(all_data_request);
       ctx.body = request;
-      ctx.status = 400; // Bad Request
+      ctx.status = 201; 
       return;
     }
 
@@ -103,6 +108,7 @@ router.post('requests.create', '/', async (ctx) => {
     all_data_request.seller = 0;
 
     // Crear la request
+    console.log("se creará la request en la base de datos")
     let request = await ctx.orm.Request.create(all_data_request);
 
     // Hacer el POST a otra URL si es necesario
@@ -190,10 +196,10 @@ router.get('requests.show', '/:request_id', async (ctx) => {
 
 router.get('requests.list', '/', async (ctx) => {
   try {
-    const { deposit_token } = ctx.query;
-    if (deposit_token) {
+    const { user_token } = ctx.query;
+    if (user_token) {
       const requests = await ctx.orm.Request.findAll({
-        where: { deposit_token },
+        where: { user_token },
       });
       ctx.body = requests;
       ctx.status = 200;

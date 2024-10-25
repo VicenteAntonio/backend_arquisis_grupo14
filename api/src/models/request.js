@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     date: DataTypes.DATE,
     result: DataTypes.STRING,
     deposit_token: DataTypes.STRING,
+    user_token: DataTypes.STRING,
     reviewed: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

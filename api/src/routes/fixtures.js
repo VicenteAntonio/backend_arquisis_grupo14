@@ -300,6 +300,19 @@ router.put('fixtures.updateHistory', '/history', async (ctx) => {
   }
 });
 
-// Si se actualiza algún resultado, se ve si alguno de los id 
+router.delete('/fixtures.deleteAll', '/', async (ctx) => {
+  try {
+    const deletedFixtures = await ctx.orm.Fixture.destroy({
+      where: {},
+      truncate: true, // Esto elimina todas las filas y reinicia los IDs
+    });
+
+    ctx.body = { message: `${deletedFixtures} fixtures eliminados` };
+    ctx.status = 200; // OK
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 500; // Internal Server Error
+  }
+});
 
 module.exports = router;

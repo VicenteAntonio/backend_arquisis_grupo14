@@ -84,13 +84,14 @@ async function sendValidationToBroker(requestInfo) {
 }
 
 client.on('message', (topic, message) => {
-    console.log(`Received message from topic ${topic}: ${message.toString()}`);
-    try {
+  console.log(`Received message from topic ${topic}: ${message.toString()}`);
+  try {
       const validation = parseValidationData(message.toString());
+      console.log('Parsed validation data:', validation); // Añade esta línea
       sendValidationToApi(validation);
-    } catch (error) {
-      console.error(error.message);
-    }
+  } catch (error) {
+      console.error('Error parsing validation data:', error.message);
+  }
 });
 
 router.post('/', async (ctx) => {

@@ -55,9 +55,9 @@ router.post('validations.create', '/', async (ctx) => {
     const request = response.data;
 
     // Obtener el token desde la request
-    const deposit_token = request.deposit_token;
+    const user_token = request.user_token;
     const cantidad = request.quantity;
-    console.log("Valor de deposit_token recibido:", deposit_token);
+    console.log("Valor de user_token recibido:", user_token);
 
     if (request.status === 'rejected') {
       console.log(`Request ya fue rechazada por insuficiencia de fondos: ${request_id}`);
@@ -80,8 +80,8 @@ router.post('validations.create', '/', async (ctx) => {
     await axios.patch(`${process.env.API_URL}/requests/${request_id}`, { status: 'accepted' });
 
     // Actualizar el wallet del usuario
-    console.log(`Compra token ${deposit_token}`);
-    await axios.patch(`${process.env.API_URL}/users/${deposit_token}`, {
+    console.log(`Compra token ${user_token}`);
+    await axios.patch(`${process.env.API_URL}/users/${user_token}`, {
       amount: -(cantidad * 1000)
     });
 

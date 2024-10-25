@@ -43,7 +43,7 @@ router.get('/:user_token', async (ctx) => {
     let requestsResponse;
     try {
       requestsResponse = await axios.get(`${process.env.API_URL}/requests`, {
-        params: { deposit_token: user_token } // Cambié depositToken por user_token
+        params: { user_token: user_token } // Cambié depositToken por user_token
       });
     } catch (error) {
       console.error('Error obteniendo las solicitudes:', error); // Log para la depuración

@@ -1,7 +1,5 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Validation extends Model {
     /**
@@ -13,14 +11,17 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  Validation.init({
-    request_id: DataTypes.STRING,
-    group_id: DataTypes.STRING,
-    seller: DataTypes.INTEGER,
-    valid: DataTypes.BOOLEAN
-  }, {
-    sequelize,
-    modelName: 'Validation',
-  });
+  Validation.init(
+    {
+      request_id: DataTypes.STRING,
+      group_id: DataTypes.STRING,
+      seller: DataTypes.INTEGER,
+      valid: DataTypes.BOOLEAN,
+    },
+    {
+      sequelize,
+      modelName: 'Validation',
+    }
+  );
   return Validation;
 };

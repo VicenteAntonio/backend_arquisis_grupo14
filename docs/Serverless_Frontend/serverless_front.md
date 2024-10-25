@@ -25,8 +25,8 @@ Esta guía detalla los pasos necesarios para configurar el despliegue continuo d
 
 1. Navega a la consola de IAM en AWS.
 2. Crea un nuevo usuario IAM con las siguientes políticas adjuntas:
-    - `AmazonS3FullAccess`
-    - `CloudFrontFullAccess`
+   - `AmazonS3FullAccess`
+   - `CloudFrontFullAccess`
 
 ### Obtener Credenciales del Usuario IAM
 
@@ -45,11 +45,11 @@ Esta guía detalla los pasos necesarios para configurar el despliegue continuo d
 1. Ve a tu repositorio en GitHub.
 2. Navega a `Settings → Security → Secrets and Variables → Actions → New Repository Secret`.
 3. Añade las siguientes secrets:
-    - `S3_BUCKET_NAME`
-    - `AWS_REGION`
-    - `AWS_ACCESS_KEY_ID`
-    - `AWS_SECRET_ACCESS_KEY`
-    - `CLOUDFRONT_DISTRIBUTION_ID`
+   - `S3_BUCKET_NAME`
+   - `AWS_REGION`
+   - `AWS_ACCESS_KEY_ID`
+   - `AWS_SECRET_ACCESS_KEY`
+   - `CLOUDFRONT_DISTRIBUTION_ID`
 
 ### 3. Configuración del Workflow de GitHub Actions
 
@@ -70,7 +70,7 @@ on:
 
   build-and-deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' 
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -98,7 +98,6 @@ on:
 
       - name: Invalidate CloudFront cache
         run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
-
 ```
 
 Este código hará un build del proyecto frontend, lo desplegará en S3 y posteriormente invalidará el caché de CloudFront.

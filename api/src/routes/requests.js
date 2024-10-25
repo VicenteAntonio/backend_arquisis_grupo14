@@ -7,12 +7,12 @@ const router = new Router();
 
 async function getUserIP() {
   try {
-      const response = await axios.get('https://api.ipify.org?format=json');
-      const userIP = response.data.ip;
-      return userIP;
+    const response = await axios.get('https://api.ipify.org?format=json');
+    const userIP = response.data.ip;
+    return userIP;
   } catch (error) {
-      console.error('Error al obtener la IP del usuario:', error);
-      return null;
+    console.error('Error al obtener la IP del usuario:', error);
+    return null;
   }
 }
 async function getLocationFromIP(ip) {
@@ -31,18 +31,20 @@ async function getLocationFromIP(ip) {
 
 router.post('requests.create', '/', async (ctx) => {
   try {
-    console.log("En post de create de la API");
+    console.log('En post de create de la API');
 
     const all_data_request = ctx.request.body;
-    
+
     // Obtener el deposit_token
     const deposit_token = all_data_request.deposit_token;
 
     // Agregar un log para ver qué valor está recibiendo como deposit_token
-    console.log("Valor de deposit_token recibido:", `${deposit_token}`);
+    console.log('Valor de deposit_token recibido:', `${deposit_token}`);
 
     // Hacer la solicitud a la API de usuarios para obtener el wallet
-    const userResponse = await axios.get(`${process.env.API_URL}/users/${deposit_token}`);
+    const userResponse = await axios.get(
+      `${process.env.API_URL}/users/${deposit_token}`
+    );
     const user = userResponse.data;
 
     if (!user) {
@@ -55,8 +57,8 @@ router.post('requests.create', '/', async (ctx) => {
     const totalAmountRequired = all_data_request.quantity * 1000;
 
     if (totalAmountRequired > user.wallet) {
-      console.log("Fondos insuficientes, la solicitud será rechazada");
-      
+      console.log('Fondos insuficientes, la solicitud será rechazada');
+
       // Rechazar la solicitud si no tiene suficientes fondos
       all_data_request.status = 'rejected';
 
@@ -67,7 +69,9 @@ router.post('requests.create', '/', async (ctx) => {
     }
 
     // Hacer la solicitud a la API de fixtures para obtener el bonusQuantity
-    const fixtureResponse = await axios.get(`${process.env.API_URL}/fixtures/${all_data_request.fixture_id}`);
+    const fixtureResponse = await axios.get(
+      `${process.env.API_URL}/fixtures/${all_data_request.fixture_id}`
+    );
     const fixture = fixtureResponse.data;
 
     if (!fixture) {
@@ -78,10 +82,12 @@ router.post('requests.create', '/', async (ctx) => {
 
     // Verificar si el bonusQuantity es suficiente
     const bonusQuantity = fixture.bonusQuantity;
-    console.log(`Bonus quantity for fixture ${all_data_request.fixture_id}: ${bonusQuantity}`);
+    console.log(
+      `Bonus quantity for fixture ${all_data_request.fixture_id}: ${bonusQuantity}`
+    );
 
     if (all_data_request.quantity > bonusQuantity) {
-      console.log("Bonus quantity insuficiente, la solicitud será rechazada");
+      console.log('Bonus quantity insuficiente, la solicitud será rechazada');
 
       // Rechazar la solicitud si no hay suficiente bonusQuantity
       all_data_request.status = 'rejected';
@@ -93,7 +99,7 @@ router.post('requests.create', '/', async (ctx) => {
     }
 
     // Si tiene suficiente bonusQuantity, proceder con la creación de la solicitud
-    console.log("Bonus quantity suficiente, creando solicitud...");
+    console.log('Bonus quantity suficiente, creando solicitud...');
     all_data_request.request_id = uuidv4();
     const userIP = await getUserIP();
     const location = await getLocationFromIP(userIP);
@@ -109,7 +115,10 @@ router.post('requests.create', '/', async (ctx) => {
     await axios.post(process.env.REQUEST_URL, request);
 
     // Actualizar la cantidad del fixture si corresponde
-    const updatedFixture = await findFixtureAndUpdatebonusQuantity(request, ctx);
+    const updatedFixture = await findFixtureAndUpdatebonusQuantity(
+      request,
+      ctx
+    );
 
     ctx.body = request;
     ctx.status = 201; // Created
@@ -120,9 +129,6 @@ router.post('requests.create', '/', async (ctx) => {
   }
 });
 
-
-
-
 async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   try {
     const fixture = await ctx.orm.Fixture.findOne({
@@ -132,8 +138,8 @@ async function findFixtureAndUpdatebonusQuantity(request, ctx) {
     });
 
     const updatedbonusQuantity = fixture.bonusQuantity - request.quantity;
-    console.log("el valor a actualizar es ")
-    console.log(updatedbonusQuantity)
+    console.log('el valor a actualizar es ');
+    console.log(updatedbonusQuantity);
     const url = `${process.env.API_URL}/fixtures/${fixture.fixtureId}`;
 
     // Datos a enviar en el cuerpo de la solicitud
@@ -173,12 +179,12 @@ router.get('requests.show', '/:request_id', async (ctx) => {
       where: { request_id: ctx.params.request_id },
     });
     if (request) {
-      console.log("se encontró la request")
+      console.log('se encontró la request');
       ctx.body = request;
       ctx.status = 200;
     } else {
       console.log(ctx.params.request_id);
-      console.log("no encontró la request");
+      console.log('no encontró la request');
       ctx.body = { error: 'Request not found' };
       ctx.status = 404;
     }
@@ -209,14 +215,13 @@ router.get('requests.list', '/', async (ctx) => {
 
 router.get('requests.all', '/list_all', async (ctx) => {
   try {
-      const requests = await ctx.orm.Request.findAll({
-      });
-      ctx.body = requests;
-      ctx.status = 200;
+    const requests = await ctx.orm.Request.findAll({});
+    ctx.body = requests;
+    ctx.status = 200;
   } catch (error) {
     ctx.body = { error: error.message };
     ctx.status = 500;
   }
-})
+});
 
 module.exports = router;

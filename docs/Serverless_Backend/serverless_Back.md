@@ -32,7 +32,6 @@ Asigna los siguientes permisos JSON al usuario IAM:
 Asigna el rol creado a tu instancia EC2 en `Actions → Security → Modify IAM Role`.
 
 ```json
-
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -47,13 +46,11 @@ Asigna el rol creado a tu instancia EC2 en `Actions → Security → Modify IAM 
     }
   ]
 }
-
 ```
 
 **Permiso para Subir Imágenes**
 
 ```json
-
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -71,7 +68,6 @@ Asigna el rol creado a tu instancia EC2 en `Actions → Security → Modify IAM 
     }
   ]
 }
-
 ```
 
 ## **5. Habilitar Docker en la Instancia**
@@ -93,10 +89,7 @@ Crea una política de IAM con el siguiente JSON, reemplazando **`replace-with-yo
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "s3:Get*",
-        "s3:List*"
-      ],
+      "Action": ["s3:Get*", "s3:List*"],
       "Resource": [
         "arn:aws:s3:::replace-with-your-s3-bucket-name/*",
         "arn:aws:s3:::aws-codedeploy-us-east-2/*",
@@ -117,7 +110,6 @@ Crea una política de IAM con el siguiente JSON, reemplazando **`replace-with-yo
     }
   ]
 }
-
 ```
 
 ## **7. Crear un Rol IAM para EC2**
@@ -133,14 +125,8 @@ Crea una política de IAM con el siguiente JSON, reemplazando **`replace-with-yo
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "s3:GetObject",
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::my-bucket",
-        "arn:aws:s3:::my-bucket/*"
-      ]
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::my-bucket", "arn:aws:s3:::my-bucket/*"]
     },
     {
       "Effect": "Allow",
@@ -156,7 +142,6 @@ Crea una política de IAM con el siguiente JSON, reemplazando **`replace-with-yo
     }
   ]
 }
-
 ```
 
 **Permisos para CodeDeploy**
@@ -168,16 +153,11 @@ Crea una política de IAM con el siguiente JSON, reemplazando **`replace-with-yo
     {
       "Sid": "VisualEditor0",
       "Effect": "Allow",
-      "Action": [
-        "codedeploy:*"
-      ],
-      "Resource": [
-        "*"
-      ]
+      "Action": ["codedeploy:*"],
+      "Resource": ["*"]
     }
   ]
 }
-
 ```
 
 **Políticas AWS Adicionales**
@@ -196,16 +176,12 @@ Crea una política de IAM con el siguiente JSON, reemplazando **`replace-with-yo
     {
       "Effect": "Allow",
       "Principal": {
-        "Service": [
-          "codedeploy.amazonaws.com",
-          "ec2.amazonaws.com"
-        ]
+        "Service": ["codedeploy.amazonaws.com", "ec2.amazonaws.com"]
       },
       "Action": "sts:AssumeRole"
     }
   ]
 }
-
 ```
 
 ## **8. Asignar Rol a la Instancia EC2**
@@ -261,7 +237,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -284,7 +260,7 @@ jobs:
           IMAGE_TAG: api
         run: |
           cd api
-        # Aquí se construye la imagen Docker para el servicio 'api'. 
+        # Aquí se construye la imagen Docker para el servicio 'api'.
         # Si tienes otro servicio, cambia 'api' por el nombre del directorio correspondiente.
           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
@@ -314,7 +290,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Configure AWS Credentials for us-east-2
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -342,7 +318,7 @@ jobs:
           echo "DeploymentId=$deploymentId" >> $GITHUB_OUTPUT
        # Cambia 'Backend-proyecto' por el nombre de tu aplicación en CodeDeploy
        # Cambia 'deploy-backend' por el nombre de tu grupo de implementación en CodeDeploy
-    
+
       - name: Wait for deployment to finish
         run: |
           aws deploy wait deployment-successful --deployment-id ${{ steps.create-deployment-trigger.outputs.deploymentId }} --region ${{ env.AWS_DEFAULT_REGION }}

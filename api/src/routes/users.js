@@ -4,7 +4,6 @@ const Router = require('koa-router');
 const router = new Router();
 const axios = require('axios');
 
-
 // Obtener el listado de todos los usuarios
 router.get('/', async (ctx) => {
   try {
@@ -43,7 +42,7 @@ router.get('/:user_token', async (ctx) => {
     let requestsResponse;
     try {
       requestsResponse = await axios.get(`${process.env.API_URL}/requests`, {
-        params: { deposit_token: user_token } // Cambié depositToken por user_token
+        params: { deposit_token: user_token }, // Cambié depositToken por user_token
       });
     } catch (error) {
       console.error('Error obteniendo las solicitudes:', error); // Log para la depuración
@@ -53,7 +52,6 @@ router.get('/:user_token', async (ctx) => {
     }
 
     const requests = requestsResponse.data; // Asegúrate de que sea un array
-    
 
     // Verificar si hay solicitudes
     if (!requests || requests.length === 0) {
@@ -63,21 +61,26 @@ router.get('/:user_token', async (ctx) => {
     }
 
     // Extraer los IDs de los fixtures de las solicitudes
-    const fixtureIds = requests.map(request => request.fixture_id).filter(id => id); // Filtra los IDs válidos
+    const fixtureIds = requests
+      .map((request) => request.fixture_id)
+      .filter((id) => id); // Filtra los IDs válidos
     if (fixtureIds.length === 0) {
       ctx.body = { message: 'No fixture IDs found in requests.' };
       ctx.status = 200; // OK, pero sin resultados
       return;
     }
-    console.log("los fixtures ids son")
-    console.log(fixtureIds)
+    console.log('los fixtures ids son');
+    console.log(fixtureIds);
 
     // Obtener los fixtures relacionados con las apuestas
     let fixturesResponse;
     try {
-      fixturesResponse = await axios.get(`${process.env.API_URL}/fixtures/byids`, {
-        params: { ids: fixtureIds.join(',') } // Envía los IDs como un string separado por comas
-      });
+      fixturesResponse = await axios.get(
+        `${process.env.API_URL}/fixtures/byids`,
+        {
+          params: { ids: fixtureIds.join(',') }, // Envía los IDs como un string separado por comas
+        }
+      );
     } catch (error) {
       console.error('Error obteniendo los fixtures:', error); // Log para la depuración
       ctx.body = { error: 'Error obteniendo los fixtures' };
@@ -86,20 +89,21 @@ router.get('/:user_token', async (ctx) => {
     }
 
     const fixtures = fixturesResponse.data; // Los fixtures obtenidos de la respuesta
-    console.log("las fixtures a revisar son")
-    console.log(fixtures)
-    let totalAmountToAdd = 0; 
+    console.log('las fixtures a revisar son');
+    console.log(fixtures);
+    let totalAmountToAdd = 0;
 
     for (const request of requests) {
-      console.log("se está revisando una request")
-      const fixture = fixtures.find(f => f.fixtureId === request.fixture_id); // Asegúrate de usar el campo correcto
-      console.log("la fixture encontrada es")
-      console.log(fixture)
-      const wonBet = fixture && (
-        (fixture.homeTeamWinner && request.result === 'home') ||
-        (fixture.awayTeamWinner && request.result === 'away') ||
-        (fixture.goalsHome === fixture.goalsAway && request.result === 'draw')
-      );
+      console.log('se está revisando una request');
+      const fixture = fixtures.find((f) => f.fixtureId === request.fixture_id); // Asegúrate de usar el campo correcto
+      console.log('la fixture encontrada es');
+      console.log(fixture);
+      const wonBet =
+        fixture &&
+        ((fixture.homeTeamWinner && request.result === 'home') ||
+          (fixture.awayTeamWinner && request.result === 'away') ||
+          (fixture.goalsHome === fixture.goalsAway &&
+            request.result === 'draw'));
 
       // Si ganó la apuesta, añade dinero a la wallet
       if (wonBet && !request.reviewed) {
@@ -118,11 +122,17 @@ router.get('/:user_token', async (ctx) => {
 
         // Actualizar el estado de la solicitud
         try {
-          await axios.patch(`${process.env.API_URL}/requests/${request.request_id}`, {
-            reviewed: true // Actualizar el estado de la solicitud
-          });
+          await axios.patch(
+            `${process.env.API_URL}/requests/${request.request_id}`,
+            {
+              reviewed: true, // Actualizar el estado de la solicitud
+            }
+          );
         } catch (error) {
-          console.error(`Error actualizando la solicitud ${request.id}:`, error);
+          console.error(
+            `Error actualizando la solicitud ${request.id}:`,
+            error
+          );
           ctx.body = { error: 'Error actualizando la solicitud' };
           ctx.status = 500; // Internal Server Error
           return;
@@ -137,7 +147,10 @@ router.get('/:user_token', async (ctx) => {
           amount: totalAmountToAdd, // Monto a añadir
         });
       } catch (error) {
-        console.error(`Error actualizando el saldo del usuario ${user_token}:`, error);
+        console.error(
+          `Error actualizando el saldo del usuario ${user_token}:`,
+          error
+        );
         ctx.body = { error: 'Error actualizando el saldo del usuario' };
         ctx.status = 500; // Internal Server Error
         return;
@@ -153,7 +166,6 @@ router.get('/:user_token', async (ctx) => {
   }
 });
 
-
 // Crear un nuevo usuario
 router.post('/', async (ctx) => {
   try {
@@ -168,51 +180,54 @@ router.post('/', async (ctx) => {
 
 // Verificar y actualizar el wallet de un usuario
 router.patch('/:user_token', async (ctx) => {
-    try {
-      const user = await ctx.orm.User.findOne({ where: { user_token: ctx.params.user_token } });
-      if (!user) {
-        ctx.body = { error: 'User not found' };
-        ctx.status = 404; // Not Found
-        return;
-      }
-  
-      const amount = parseInt(ctx.request.body.amount); // Obtener el valor enviado en el body
-      if (isNaN(amount)) {
-        ctx.body = { error: 'Invalid amount' };
+  try {
+    const user = await ctx.orm.User.findOne({
+      where: { user_token: ctx.params.user_token },
+    });
+    if (!user) {
+      ctx.body = { error: 'User not found' };
+      ctx.status = 404; // Not Found
+      return;
+    }
+
+    const amount = parseInt(ctx.request.body.amount); // Obtener el valor enviado en el body
+    if (isNaN(amount)) {
+      ctx.body = { error: 'Invalid amount' };
+      ctx.status = 400; // Bad Request
+      return;
+    }
+
+    // Si la cantidad es positiva, sumarla a `wallet`
+    if (amount > 0) {
+      user.wallet += amount;
+    } else if (amount < 0) {
+      // Si la cantidad es negativa, verificar si puede restarse de `wallet`
+      if (Math.abs(amount) > user.wallet) {
+        ctx.body = { error: 'Insufficient funds in wallet' };
         ctx.status = 400; // Bad Request
         return;
       }
-  
-      // Si la cantidad es positiva, sumarla a `wallet`
-      if (amount > 0) {
-        user.wallet += amount;
-      } else if (amount < 0) {
-        // Si la cantidad es negativa, verificar si puede restarse de `wallet`
-        if (Math.abs(amount) > user.wallet) {
-          ctx.body = { error: 'Insufficient funds in wallet' };
-          ctx.status = 400; // Bad Request
-          return;
-        }
-        user.wallet += amount; // Resta el valor negativo
-      }
-  
-      // Guardar los cambios en la base de datos
-      await user.save();
-  
-      ctx.body = user;
-      ctx.status = 200; // OK
-    } catch (error) {
-      console.log('Error actualizando la wallet:', error);
-      ctx.body = { error: error.message };
-      ctx.status = 500; // Internal Server Error
+      user.wallet += amount; // Resta el valor negativo
     }
-  });
-  
+
+    // Guardar los cambios en la base de datos
+    await user.save();
+
+    ctx.body = user;
+    ctx.status = 200; // OK
+  } catch (error) {
+    console.log('Error actualizando la wallet:', error);
+    ctx.body = { error: error.message };
+    ctx.status = 500; // Internal Server Error
+  }
+});
 
 // Borrar un usuario
 router.delete('/:user_token', async (ctx) => {
   try {
-    const user = await ctx.orm.User.findOne({ where: { user_token: ctx.params.user_token } });
+    const user = await ctx.orm.User.findOne({
+      where: { user_token: ctx.params.user_token },
+    });
     if (!user) {
       ctx.body = { error: 'User not found' };
       ctx.status = 404; // Not Found

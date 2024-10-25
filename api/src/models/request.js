@@ -1,7 +1,5 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Request extends Model {
     /**
@@ -13,35 +11,37 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  Request.init({
-    request_id: DataTypes.UUID,
-    group_id: DataTypes.STRING,
-    fixture_id: DataTypes.INTEGER,
-    league_name: DataTypes.STRING,
-    round: DataTypes.STRING,
-    date: DataTypes.DATE,
-    result: DataTypes.STRING,
-    deposit_token: DataTypes.STRING,
-    reviewed: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+  Request.init(
+    {
+      request_id: DataTypes.UUID,
+      group_id: DataTypes.STRING,
+      fixture_id: DataTypes.INTEGER,
+      league_name: DataTypes.STRING,
+      round: DataTypes.STRING,
+      date: DataTypes.DATE,
+      result: DataTypes.STRING,
+      deposit_token: DataTypes.STRING,
+      reviewed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      datetime: DataTypes.STRING,
+      quantity: DataTypes.INTEGER,
+      seller: DataTypes.INTEGER,
+      location: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'pending',
+      },
     },
-    datetime: DataTypes.STRING,
-    quantity: DataTypes.INTEGER,
-    seller: DataTypes.INTEGER,
-    location: {
-      type: DataTypes.STRING,
-      allowNull: true, 
-    },
-    status: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: 'pending',
-    },
-    
-  }, {
-    sequelize,
-    modelName: 'Request',
-  });
+    {
+      sequelize,
+      modelName: 'Request',
+    }
+  );
   return Request;
 };

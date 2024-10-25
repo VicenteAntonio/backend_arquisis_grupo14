@@ -7,110 +7,110 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       homeTeamId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       homeTeamName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       homeTeamLogo: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       homeTeamWinner: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
       },
       awayTeamId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       awayTeamName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       awayTeamLogo: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       awayTeamWinner: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
       },
       goalsHome: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       goalsAway: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       leagueId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       leagueName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       leagueCountry: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       leagueLogo: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       leagueFlag: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       leagueSeason: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       leagueRound: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       fixtureId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       fixtureReferee: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       fixtureDate: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       fixtureTimezone: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       fixtureTimestamp: {
-        type: Sequelize.BIGINT
+        type: Sequelize.BIGINT,
       },
       fixtureStatus: {
-        type: Sequelize.JSON
+        type: Sequelize.JSON,
       },
       result: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       oddsId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       oddsName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       oddsHome: {
-        type: Sequelize.DECIMAL(10, 2)
+        type: Sequelize.DECIMAL(10, 2),
       },
       oddsDraw: {
-        type: Sequelize.DECIMAL(10, 2)
+        type: Sequelize.DECIMAL(10, 2),
       },
       oddsAway: {
-        type: Sequelize.DECIMAL(10, 2)
+        type: Sequelize.DECIMAL(10, 2),
       },
       bonusQuantity: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Fixtures');
-  }
+  },
 };

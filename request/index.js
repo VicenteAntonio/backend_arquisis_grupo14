@@ -57,6 +57,7 @@ function parseRequestData(requestData) {
       datetime: requestString.datetime,
       quantity: requestString.quantity,
       seller: requestString.seller,
+      wallet: requestString.wallet
     };
     // Formato datetime: 'YYYY-MM-ddThh:mm:ss UTC)
     return request;
@@ -106,7 +107,7 @@ async function sendRequestToBroker(request) {
         datetime : request.datetime,
         quantity: request.quantity,
         seller: 0,
-        wallet: true
+        wallet: request.wallet
     };
   
     // Cambiar formato de fecha

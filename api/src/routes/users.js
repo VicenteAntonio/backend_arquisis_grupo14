@@ -91,9 +91,7 @@ router.get('/:user_token', async (ctx) => {
     let totalAmountToAdd = 0; 
 
     for (const request of requests) {
-      console.log("se está revisando una request")
       const fixture = fixtures.find(f => f.fixtureId === request.fixture_id); // Asegúrate de usar el campo correcto
-      console.log("la fixture encontrada es")
       console.log(fixture)
       const wonBet = fixture && (
         (fixture.homeTeamWinner && request.result === 'home') ||

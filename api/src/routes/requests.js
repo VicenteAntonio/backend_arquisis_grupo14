@@ -125,7 +125,8 @@ router.post('requests.create', '/', async (ctx) => {
 
     // Hacer el POST a otra URL si es necesario
     console.log("se verá si se va a enviar al broker")
-    if (user_token !== undefined){
+    const wallet = all_data_request.wallet;
+    if (user_token !== undefined && wallet == true){
       console.log("se enviará al broker")
       await axios.post(process.env.REQUEST_URL, request);
     }
@@ -182,7 +183,16 @@ router.patch('requests.update', '/:request_id', async (ctx) => {
       ctx.status = 404;
       return;
     }
+    const previousDepositToken = request.deposit_token;
+
+    // Actualizar la solicitud con los datos del cuerpo de la petición
     await request.update(ctx.request.body);
+
+    // Verificar si el deposit_token ha cambiado
+    if (previousDepositToken !== request.deposit_token) {
+      // Si ha cambiado, enviar la actualización al broker
+      await axios.post(process.env.REQUEST_URL, request);;
+    }
     ctx.body = request;
     ctx.status = 200;
   } catch (error) {

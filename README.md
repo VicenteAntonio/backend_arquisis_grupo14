@@ -132,18 +132,13 @@ API_URL = http://api:3000
 VALIDATION_PORT = 9000
 ```
 
-6. Crear archivo `.env` dentro de directorio `recommendation_service/jobs-master` con las siguientes variables:
+6. Crear archivo `.env` dentro de directorio `recommendation_service` con las siguientes variables:
 
 ```
 REDIS_HOST = redis
 REDIS_PORT = 6379
 REDIS_PASSWORD = 12345
 JOBS_MASTER_PORT = 4000
-```
-
-7. Crear archivo `.env` dentro de directorio `recommendation_service/workers` con las siguientes variables:
-
-```
 API_URL=http://localhost:3000
 DB_USERNAME = <db_username>
 DB_PASSWORD = <db_password>

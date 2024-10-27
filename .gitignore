@@ -24,3 +24,4 @@ grupo14arquisis.pem
 ./recommendation_service/workers/node_modules
 ./recommendation_service/jobsMaster/.env
 ./recommendation_service/workers/.env
+.recommendation_service/.env

@@ -108,7 +108,7 @@ services:
     depends_on:
       - redis
     env_file:
-      - ./recommendation_service/jobs-master/.env
+      - ./recommendation_service/.env
     environment:
       - REDIS_PORT=6379
       - REDIS_HOST=redis
@@ -128,7 +128,7 @@ services:
     depends_on:
       - redis
     env_file:
-      - ./recommendation_service/workers/.env
+      - ./recommendation_service/.env
     environment:
       - REDIS_PORT=6379
       - REDIS_HOST=redis

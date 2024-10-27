@@ -76,6 +76,7 @@ router.post('/create', async (ctx) => {
 // Actualizar la transacción según los resultados
 router.post('/commit', async (ctx) => {
   const { ws_token } = ctx.request.body;
+  console.log("el token recibido en commit es", ws_token)
 
   if (!ws_token) {
     ctx.status = 200;
@@ -84,11 +85,13 @@ router.post('/commit', async (ctx) => {
   }
 
   const confirmedTx = await tx.commit(ws_token);
+  
+  console.log("el confirmedTx es", confirmedTx)
 
   if (confirmedTx.response_code !== 0) { // Transacción rechazada
     const trx = await ctx.orm.Transaction.update(
       { status: "rejected" }, 
-      { where: { token: ws_token } }
+      { where: { transaction_token: ws_token } }
     );
 
     ctx.status = 200;
@@ -103,7 +106,7 @@ router.post('/commit', async (ctx) => {
   // Transacción aceptada
   const trx = await ctx.orm.Transaction.update(
     { status: "completed" }, 
-    { where: { token: ws_token } }
+    { where: { transaction_token: ws_token } }
   );
 
   ctx.status = 200;

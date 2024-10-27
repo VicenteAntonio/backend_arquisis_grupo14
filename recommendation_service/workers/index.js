@@ -2,7 +2,7 @@ const { Worker, Job } = require('bullmq');
 const axios = require('axios');
 const dotenv = require('dotenv');
 const { Sequelize, QueryTypes, Op } = require('sequelize');
-const request = require('../../api/src/models/request');
+const Request = require('../../api/src/models/request');
 
 dotenv.config();
 

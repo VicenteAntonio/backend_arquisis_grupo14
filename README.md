@@ -9,7 +9,7 @@ Este proyecto se centra en la implementación del backend para el dominio `web.g
 - En la base de datos, el arreglo `requests` asociado al modelo `User` contiene los `request_id` de las solicitudes generadas por el usuario.
   -Se utilizó Node.js con Koa para desarrollar la API.
 - La base de datos fue instanciada y conectada usando Sequelize como ORM.
-- IP de Instancia EC2: 52.71.13.245
+- IP de Instancia EC2: back.grupo14arquisis.me
 - API Gateway: api.grupo14arquisis.me
 
 ## Documentación de la API
@@ -52,21 +52,27 @@ TEND_REDIRECT_URL = http://localhost:5173/purchaseCompleted
 API_URL = http://localhost:3000
 ```
 
-3. Crear archivo `.env` dentro de carpeta `requests` con las siguientes variables:
+3. Crear archivo `.env` dentro de carpeta `history` con las siguientes variables:
+
+```
+API_URL = http://localhost:3000
+```
+
+4. Crear archivo `.env` dentro de carpeta `requests` con las siguientes variables:
 
 ```
 API_URL = http://localhost:3000
 REQUEST_PORT = 8000
 ```
 
-4. Crear archivo `.env` dentro de carpeta `validations` con las siguientes variables:
+5. Crear archivo `.env` dentro de carpeta `validations` con las siguientes variables:
 
 ```
 API_URL = http://localhost:3000
 VALIDATION_PORT = 9000
 ```
 
-5. Crear archivo `.env` en la parte raíz del repositorio con las siguientes variables:
+6. Crear archivo `.env` en la parte raíz del repositorio con las siguientes variables:
 
 ```
 DB_USERNAME = <db_username>

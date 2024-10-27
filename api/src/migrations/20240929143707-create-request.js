@@ -7,64 +7,64 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       request_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.UUID
       },
       group_id: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       fixture_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       league_name: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       round: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       location: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       user_token: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       date: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
       },
       result: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       reviewed: {
-        type: Sequelize.BOOLEAN,
+        type: Sequelize.BOOLEAN
       },
       deposit_token: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       datetime: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       quantity: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       seller: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       status: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE,
+        type: Sequelize.DATE
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE,
-      },
+        type: Sequelize.DATE
+      }
     });
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Requests');
-  },
+  }
 };

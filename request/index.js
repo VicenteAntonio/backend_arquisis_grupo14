@@ -7,7 +7,6 @@ const koaLogger = require('koa-logger');
 const Router = require('koa-router');
 const boddyParser = require('koa-bodyparser');
 const moment = require('moment');
-const { handleError } = require('./utils');
 
 const app = new Koa();
 const router = new Router();
@@ -58,6 +57,7 @@ function parseRequestData(requestData) {
       datetime: requestString.datetime,
       quantity: requestString.quantity,
       seller: requestString.seller,
+      wallet: requestString.wallet
     };
     // Formato datetime: 'YYYY-MM-ddThh:mm:ss UTC)
     return request;
@@ -67,19 +67,17 @@ function parseRequestData(requestData) {
 }
 
 async function sendRequestToApi(request) {
-  console.log('resquest es ', request);
   try {
-    const response = await axios.post(
-      `${process.env.API_URL}/requests`,
-      request
-    );
+    const response = await axios.post(`${process.env.API_URL}/requests`, request);
     console.log('Request send to API:', response.data);
   } catch (error) {
-    handleError(error);
+    console.error('Error sending request to API:', error.response.data);
   }
 }
 
-async function findUserAndUpdateQuantity(request) {}
+async function findUserAndUpdateQuantity(request) {
+
+}
 
 client.on('message', (topic, message) => {
   console.log(`Received message on ${topic}:`, message.toString());
@@ -98,20 +96,20 @@ client.on('message', (topic, message) => {
 async function sendRequestToBroker(request) {
   try {
     const parsedRequest = {
-      request_id: request.request_id,
-      group_id: request.group_id,
-      fixture_id: request.fixture_id,
-      league_name: request.league_name,
-      round: request.round,
-      date: request.date,
-      result: request.result,
-      deposit_token: request.deposit_token,
-      datetime: request.datetime,
-      quantity: request.quantity,
-      seller: 0,
-      username: request.username,
+        request_id: request.request_id,
+        group_id: request.group_id,
+        fixture_id: request.fixture_id,
+        league_name: request.league_name,
+        round: request.round,
+        date: request.date,
+        result: request.result,
+        deposit_token: request.deposit_token,
+        datetime : request.datetime,
+        quantity: request.quantity,
+        seller: 0,
+        wallet: request.wallet
     };
-
+  
     // Cambiar formato de fecha
     const requestData = JSON.stringify(parsedRequest); // Date Handle
     client.publish(TOPIC, requestData);

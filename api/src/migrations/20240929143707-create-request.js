@@ -28,7 +28,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       user_token: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       date: {
         type: Sequelize.DATE,

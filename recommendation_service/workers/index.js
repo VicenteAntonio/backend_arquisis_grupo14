@@ -2,7 +2,17 @@ const { Worker, Job } = require('bullmq');
 const axios = require('axios');
 const dotenv = require('dotenv');
 const { Sequelize, QueryTypes, Op } = require('sequelize');
-const Request = require('../../api/src/models/request');
+let Request;
+try {
+  console.log(`Connecting to Redis at ${process.env.REDIS_HOST}`);
+
+  Request = require('../../api/src/models/request');
+} catch (error) {
+  console.log("AAAAA");
+  console.log(`Connecting to Redis at ${process.env.REDIS_HOST}`);
+
+  console.error('Request model not found:', error);
+}
 
 dotenv.config();
 

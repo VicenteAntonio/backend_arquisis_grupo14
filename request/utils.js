@@ -4,29 +4,29 @@
 const axios = require('axios');
 
 module.exports = {
-    handleError,
+  handleError,
 };
 
 function handleError(error) {
-    if (axios.isAxiosError(error)) {
-        // Manejo específico de AxiosError
-        console.error('Error sending request to API:', error.message);
-        console.error('Error code:', error.code);
+  if (axios.isAxiosError(error)) {
+    // Manejo específico de AxiosError
+    console.error('Error sending request to API:', error.message);
+    console.error('Error code:', error.code);
 
-        if (error.response) {
-            // La solicitud se realizó y el servidor respondió con un código de estado fuera del rango de 2xx
-            console.error('Response data:', error.response.data);
-            console.error('Response status:', error.response.status);
-            console.error('Response headers:', error.response.headers);
-        } else if (error.request) {
-            // La solicitud se realizó pero no se recibió respuesta
-            console.error('No response received:', error.request);
-        } else {
-            // Algo pasó al configurar la solicitud
-            console.error('Request setup error:', error.message);
-        }
+    if (error.response) {
+      // La solicitud se realizó y el servidor respondió con un código de estado fuera del rango de 2xx
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+      console.error('Response headers:', error.response.headers);
+    } else if (error.request) {
+      // La solicitud se realizó pero no se recibió respuesta
+      console.error('No response received:', error.request);
     } else {
-        // Manejo de errores que no son de Axios
-        console.error('Unexpected error:', error);
+      // Algo pasó al configurar la solicitud
+      console.error('Request setup error:', error.message);
     }
+  } else {
+    // Manejo de errores que no son de Axios
+    console.error('Unexpected error:', error);
+  }
 }

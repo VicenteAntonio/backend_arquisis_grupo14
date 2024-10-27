@@ -5,15 +5,14 @@ const { Sequelize, QueryTypes, Op } = require('sequelize');
 const redis = require('redis');
 
 const client = redis.createClient({
-    host: 'redis', // O la dirección de tu contenedor de Redis
-    port: 6379,
-    password: process.env.REDIS_PASSWORD // Asegúrate de que esta contraseña coincida
+  host: 'redis', // O la dirección de tu contenedor de Redis
+  port: 6379,
+  password: process.env.REDIS_PASSWORD, // Asegúrate de que esta contraseña coincida
 });
 
 client.on('error', (err) => {
-    console.error('Redis error:', err);
+  console.error('Redis error:', err);
 });
-
 
 dotenv.config();
 
@@ -230,7 +229,7 @@ async function processor(job) {
       .sort((a, b) => b.pond - a.pond)
       .slice(0, 3); // ordenar los partidos por beneficios y devolver los primeros 3
 
-      return sortedRecommendations;
+    return sortedRecommendations;
     // const sortedRecommendations = recommendations
     //   .sort((a, b) => b.pond - a.pond)
     //   .slice(0, 3);
@@ -240,7 +239,6 @@ async function processor(job) {
     //     await saveRecommendation(username, recommendation.fixture.id);
     //   })
     // );
-
   } catch (error) {
     console.log(`Error processing job: ${error.message}`);
     throw error;

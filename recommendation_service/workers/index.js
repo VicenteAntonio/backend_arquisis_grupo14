@@ -2,17 +2,18 @@ const { Worker, Job } = require('bullmq');
 const axios = require('axios');
 const dotenv = require('dotenv');
 const { Sequelize, QueryTypes, Op } = require('sequelize');
-let Request;
-try {
-  console.log(`Connecting to Redis at ${process.env.REDIS_HOST}`);
+const redis = require('redis');
 
-  Request = require('../../api/src/models/request');
-} catch (error) {
-  console.log("AAAAA");
-  console.log(`Connecting to Redis at ${process.env.REDIS_HOST}`);
+const client = redis.createClient({
+    host: 'redis', // O la dirección de tu contenedor de Redis
+    port: 6379,
+    password: process.env.REDIS_PASSWORD // Asegúrate de que esta contraseña coincida
+});
 
-  console.error('Request model not found:', error);
-}
+client.on('error', (err) => {
+    console.error('Redis error:', err);
+});
+
 
 dotenv.config();
 

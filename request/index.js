@@ -7,6 +7,7 @@ const koaLogger = require('koa-logger');
 const Router = require('koa-router');
 const boddyParser = require('koa-bodyparser');
 const moment = require('moment');
+const {handleError} = require('./utils');
 
 const app = new Koa();
 const router = new Router();
@@ -66,6 +67,7 @@ function parseRequestData(requestData) {
 }
 
 async function sendRequestToApi(request) {
+  console.log("resquest es ",request);
   try {
     const response = await axios.post(
       `${process.env.API_URL}/requests`,
@@ -73,7 +75,7 @@ async function sendRequestToApi(request) {
     );
     console.log('Request send to API:', response.data);
   } catch (error) {
-    console.error('Error sending request to API:', error.response.data);
+    handleError(error);
   }
 }
 
@@ -107,6 +109,7 @@ async function sendRequestToBroker(request) {
       datetime: request.datetime,
       quantity: request.quantity,
       seller: 0,
+      username: request.username,
     };
 
     // Cambiar formato de fecha

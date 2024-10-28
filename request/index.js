@@ -112,7 +112,7 @@ async function sendRequestToBroker(request) {
     };
   
     // Cambiar formato de fecha
-    console.log('mira aqui', parsedRequest.request_id) 
+  
     const requestData = JSON.stringify(parsedRequest);
     // Date Handle
     client.publish(TOPIC, requestData);

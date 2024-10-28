@@ -11,9 +11,9 @@ const {
        */
       static associate(models) {
         // define association here
-        this.belongsTo(models.Flight, {
-          foreignKey: 'flightId',
-          as: 'flight',
+        this.belongsTo(models.Fixture, {
+          foreignKey: 'fixtureId',
+          as: 'fixture',
         });
       }
     }

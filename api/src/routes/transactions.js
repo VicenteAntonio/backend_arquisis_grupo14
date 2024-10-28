@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const tx = require('../../utils/trx');
 const axios = require('axios'); 
+const transporter = require('../config/mailer')
 
 //const trxRouter = new Router();
 const router = new Router();
@@ -99,8 +100,8 @@ async function sendValidationToBroker(request_id, group_id, seller, valid) {
 router.post('/commit', async (ctx) => {
   const  group_id = '14'
   const seller =0
-  const { ws_token, request_id} = ctx.request.body;
-  console.log('Received in commit:', { ws_token, request_id, group_id, seller });
+  const { ws_token, request_id, mail} = ctx.request.body;
+  console.log('Received in commit:', { ws_token, request_id, group_id, seller, mail });
 
   if (!ws_token || !request_id || !group_id || seller === undefined) {
     ctx.status = 400;
@@ -121,6 +122,14 @@ router.post('/commit', async (ctx) => {
         { where: { transaction_token: ws_token } }
       );
       valid = true;
+      await transporter.sendMail({
+        from: '"Transacciones" <magdalenapino9@gmail.com>',
+        to: mail, // Cambia esto al correo de destino
+        subject: "Transacción Aceptada",
+        text: `Tu transacción ha sido aceptada por un monto de ${confirmedTx.amount}.`,
+        html: `<p>Tu transacción  ha sido aceptada por un monto de <strong>${confirmedTx.amount}</strong>.</p>`
+      });
+      console.log("aceptada pou")
       ctx.body = { message: 'Transaction accepted', request_id, amount: confirmedTx.amount };
     } else {
       // Transacción rechazada

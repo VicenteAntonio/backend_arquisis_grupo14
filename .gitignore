@@ -1,5 +1,7 @@
 listener/node_modules
 api/node_modules
+api/node_modules/
+
 requests/node_modules
 validations/node_modules
 /node_modules

@@ -4,6 +4,7 @@ const Router = require('koa-router');
 const { koaBody } = require('koa-body');
 const { Queue } = require('bullmq');
 const dotenv = require('dotenv');
+const axios = require('axios');
 
 const app = new Koa();
 const router = new Router();
@@ -70,6 +71,7 @@ router.post('/job', async (ctx) => {
 router.get('/heartbeat', async (ctx) => {
   // Logica de heartbeat
   ctx.body = { status: true };
+  ctx.status = 200;
 });
 
 app.listen(process.env.JOBS_MASTER_PORT, (err) => {

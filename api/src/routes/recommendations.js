@@ -44,10 +44,10 @@ router.get('recommendations.list', '/', async (ctx) => {
   }
 });
 
-router.get('recommendations.heartbeat', '/heartbeat', async (ctx) => {
+router.get('/heartbeat', async (ctx) => {
   try {
     const response = await axios.get(`${process.env.JOBS_MASTER_URL}/heartbeat`);
-
+    console.log(response.data);
     ctx.body = response.data;
     ctx.status = 200;
   } catch (error) {

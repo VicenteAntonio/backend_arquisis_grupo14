@@ -36,9 +36,9 @@ router.post('/fixtures.create', '/', async (ctx) => {
           fixtureStatus: receivedfixture.fixture.status,
           oddsId: receivedfixture.odds[0].id,
           oddsName: receivedfixture.odds[0].name,
-          oddsHome: parseFloat(receivedfixture.odds[0].values[0].odd),
-          oddsDraw: parseFloat(receivedfixture.odds[0].values[1].odd),
-          oddsAway: parseFloat(receivedfixture.odds[0].values[2].odd),
+          oddsHome: parseFloat(receivedfixture.odds[0].values[0]),
+          oddsDraw: parseFloat(receivedfixture.odds[0].values[1]),
+          oddsAway: parseFloat(receivedfixture.odds[0].values[2]),
           result: `${receivedfixture.goals.home} - ${receivedfixture.goals.away}`,
         };
 

@@ -100,8 +100,8 @@ async function sendValidationToBroker(request_id, group_id, seller, valid) {
 router.post('/commit', async (ctx) => {
   const  group_id = '14'
   const seller =0
-  const { ws_token, request_id} = ctx.request.body;
-  console.log('Received in commit:', { ws_token, request_id, group_id, seller });
+  const { ws_token, request_id, mail} = ctx.request.body;
+  console.log('Received in commit:', { ws_token, request_id, group_id, seller, mail });
 
   if (!ws_token || !request_id || !group_id || seller === undefined) {
     ctx.status = 400;
@@ -124,10 +124,10 @@ router.post('/commit', async (ctx) => {
       valid = true;
       await transporter.sendMail({
         from: '"Transacciones" <magdalenapino9@gmail.com>',
-        to: "magdalenapino9@gmail.com", // Cambia esto al correo de destino
+        to: mail, // Cambia esto al correo de destino
         subject: "Transacción Aceptada",
-        text: `La transacción con ID ${request_id} ha sido aceptada por un monto de ${confirmedTx.amount}.`,
-        html: `<p>La transacción con ID <strong>${request_id}</strong> ha sido aceptada por un monto de <strong>${confirmedTx.amount}</strong>.</p>`
+        text: `Tu transacción ha sido aceptada por un monto de ${confirmedTx.amount}.`,
+        html: `<p>Tu transacción  ha sido aceptada por un monto de <strong>${confirmedTx.amount}</strong>.</p>`
       });
       console.log("aceptada pou")
       ctx.body = { message: 'Transaction accepted', request_id, amount: confirmedTx.amount };

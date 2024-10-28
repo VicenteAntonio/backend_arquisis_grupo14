@@ -1,5 +1,6 @@
 const Router = require('koa-router');
-const tx = require('../../utils/trx');; // Manteniendo la importación de tx
+const tx = require('../../utils/trx');
+const axios = require('axios'); 
 
 //const trxRouter = new Router();
 const router = new Router();
@@ -73,50 +74,74 @@ router.post('/create', async (ctx) => {
   }
 });
 
+async function sendValidationToBroker(request_id, group_id, seller, valid) {
+  try {
+    const validationData = {
+      request_id,
+      group_id,
+      seller,
+      valid
+    };
+    console.log('Sending validation to broker:', process.env.VALIDATION_URL, validationData);
+
+    await axios.post(process.env.VALIDATION_URL, validationData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Validation sent to broker successfully');
+  } catch (error) {
+    console.error('Error sending validation to broker:', error.message);
+  }
+}
+
 // Actualizar la transacción según los resultados
 router.post('/commit', async (ctx) => {
-  const { ws_token } = ctx.request.body;
-  console.log("el token recibido en commit es", ws_token)
+  const  group_id = '14'
+  const seller =0
+  const { ws_token, request_id} = ctx.request.body;
+  console.log('Received in commit:', { ws_token, request_id, group_id, seller });
 
-  if (!ws_token) {
-    ctx.status = 200;
-    ctx.body = { message: "Transacción anulada por el usuario" };
+  if (!ws_token || !request_id || !group_id || seller === undefined) {
+    ctx.status = 400;
+    ctx.body = { message: 'Missing required fields: ws_token, request_id, group_id, or seller' };
     return;
   }
 
-  const confirmedTx = await tx.commit(ws_token);
-  
-  console.log("el confirmedTx es", confirmedTx)
+  try {
+    const confirmedTx = await tx.commit(ws_token);
+    console.log('Confirmed transaction:', confirmedTx);
 
-  if (confirmedTx.response_code !== 0) { // Transacción rechazada
-    const trx = await ctx.orm.Transaction.update(
-      { status: "rejected" }, 
-      { where: { transaction_token: ws_token } }
-    );
+    let valid = false;
+
+    if (confirmedTx.response_code === 0) {
+      // Transacción aceptada
+      await ctx.orm.Transaction.update(
+        { status: 'completed' },
+        { where: { transaction_token: ws_token } }
+      );
+      valid = true;
+      ctx.body = { message: 'Transaction accepted', request_id, amount: confirmedTx.amount };
+    } else {
+      // Transacción rechazada
+      await ctx.orm.Transaction.update(
+        { status: 'rejected' },
+        { where: { transaction_token: ws_token } }
+      );
+      ctx.body = { message: 'Transaction rejected', request_id, amount: confirmedTx.amount };
+    }
+
+    // Enviar la validación al broker
+    console.log('Sending validation to broker with valid:', valid);
+    await sendValidationToBroker(request_id, group_id, seller, valid);
 
     ctx.status = 200;
-    ctx.body = {
-      message: "Transacción rechazada",
-      request_id: trx.request_id,
-      amount: trx.amount,
-    };
-    return;
+  } catch (error) {
+    console.error('Error processing commit:', error);
+    ctx.status = 500;
+    ctx.body = { message: 'Error processing the transaction', error: error.message };
   }
-
-  // Transacción aceptada
-  const trx = await ctx.orm.Transaction.update(
-    { status: "completed" }, 
-    { where: { transaction_token: ws_token } }
-  );
-
-  ctx.status = 200;
-  ctx.body = {
-    message: "Transacción aceptada",
-    request_id: trx.request_id,
-    amount: trx.amount,
-  };
 });
-
 
 //module.exports = { trxRouter };
 module.exports = router;

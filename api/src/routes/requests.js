@@ -145,9 +145,6 @@ router.post('requests.create', '/', async (ctx) => {
   }
 });
 
-
-
-
 async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   try {
     const fixture = await ctx.orm.Fixture.findOne({

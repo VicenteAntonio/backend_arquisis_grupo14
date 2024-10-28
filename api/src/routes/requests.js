@@ -111,7 +111,10 @@ router.post('requests.create', '/', async (ctx) => {
 
     // Si tiene suficiente bonusQuantity, proceder con la creación de la solicitud
     console.log("Bonus quantity suficiente, creando solicitud...");
-    all_data_request.request_id = uuidv4();
+    if (!all_data_request.request_id) {
+      all_data_request.request_id = uuidv4();
+      console.log("Nuevo request_id generado:", all_data_request.request_id);
+    }
     const userIP = await getUserIP();
     const location = await getLocationFromIP(userIP);
 

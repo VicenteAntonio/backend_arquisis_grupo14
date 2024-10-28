@@ -43,6 +43,9 @@ router.post('requests.create', '/', async (ctx) => {
 
     // Agregar un log para ver qué valor está recibiendo como user_token
     console.log("Valor de user_token recibido:", `${user_token}`);
+
+    
+    
     let user;
 
     if (user_token !== undefined) {
@@ -56,6 +59,8 @@ router.post('requests.create', '/', async (ctx) => {
           // Maneja el error aquí, por ejemplo, devolviendo una respuesta de error
       }
     }
+
+    console.log('esta el id?',all_data_request.request_id)
 
     // Verificar si el wallet es suficiente
     const totalAmountRequired = all_data_request.quantity * 1000;
@@ -111,7 +116,13 @@ router.post('requests.create', '/', async (ctx) => {
 
     // Si tiene suficiente bonusQuantity, proceder con la creación de la solicitud
     console.log("Bonus quantity suficiente, creando solicitud...");
-    all_data_request.request_id = uuidv4();
+    if (!all_data_request.request_id) {
+      all_data_request.request_id = uuidv4();
+      console.log("Nuevo request_id generado:", all_data_request.request_id);
+    }
+
+    
+
     const userIP = await getUserIP();
     const location = await getLocationFromIP(userIP);
 

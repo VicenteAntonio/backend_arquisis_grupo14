@@ -10,12 +10,13 @@ function delay(ms) {
 
 async function findFixture(request) {
   try {
+    console.log('Buscando fixture con fixtureId:', request.departureAirport);
     const response = await axios.get(`${process.env.API_URL}/fixtures/find`, {
       params: {
         fixtureId: request.departureAirport,
       },
     });
-
+    console.log('Respuesta de fixture:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error finding fixture:', error);
@@ -24,19 +25,28 @@ async function findFixture(request) {
 
 async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   try {
+    console.log('Buscando fixture con fixtureId para actualizar:', request.fixture_id);
     const fixture = await ctx.orm.Fixture.findOne({
       where: {
         fixtureId: request.fixture_id,
       },
     });
 
-    const updatedbonusQuantity = fixture.bonusQuantity + request.quantity;
-    const url = `${process.env.API_URL}/fixtures/${fixture.fixtureId}`;
+    if (!fixture) {
+      console.log('Fixture no encontrado para fixtureId:', request.fixture_id);
+      return;
+    }
 
-    // Datos a enviar en el cuerpo de la solicitud
+    const updatedbonusQuantity = fixture.bonusQuantity + request.quantity;
+    console.log('Nuevo valor de bonusQuantity:', updatedbonusQuantity);
+
+    const url = `${process.env.API_URL}/fixtures/${fixture.fixtureId}`;
+    console.log('URL para actualizar fixture:', url);
+
     const data = {
       bonusQuantity: updatedbonusQuantity,
     };
+
     const response = await axios.patch(url, data);
     console.log('Fixture actualizado:', response.data);
     return response.data;
@@ -47,17 +57,22 @@ async function findFixtureAndUpdatebonusQuantity(request, ctx) {
 
 router.post('validations.create', '/', async (ctx) => {
   try {
+    console.log('Iniciando validación de la request:', ctx.request.body);
+
     const validation = await ctx.orm.Validation.create(ctx.request.body);
     const { valid, request_id, quantity } = validation;
+    console.log('Validación creada:', validation);
+    
     await delay(1000);
 
+    console.log('Consultando detalles de la request con ID:', request_id);
     const response = await axios.get(`${process.env.API_URL}/requests/${request_id}`);
-    const request = response.data;
+    console.log('Respuesta de la API para la request:', response.data);
 
-    // Obtener el token desde la request
+    const request = response.data;
     const user_token = request.user_token;
     const cantidad = request.quantity;
-    console.log("Valor de user_token recibido:", user_token);
+    console.log('Valor de user_token recibido:', user_token);
 
     if (request.status === 'rejected') {
       console.log(`Request ya fue rechazada por insuficiencia de fondos: ${request_id}`);
@@ -75,12 +90,10 @@ router.post('validations.create', '/', async (ctx) => {
       return;
     }
 
-    // Si es accepted, restar al wallet del usuario
     console.log(`Compra aceptada para request ${request_id}`);
     await axios.patch(`${process.env.API_URL}/requests/${request_id}`, { status: 'accepted' });
 
-    // Actualizar el wallet del usuario
-    console.log(`Compra token ${user_token}`);
+    console.log(`Actualizando el wallet del usuario con token ${user_token}`);
     await axios.patch(`${process.env.API_URL}/users/${user_token}`, {
       amount: -(cantidad * 1000)
     });
@@ -95,5 +108,4 @@ router.post('validations.create', '/', async (ctx) => {
 });
 
 
-
-  module.exports = router;
+module.exports = router;

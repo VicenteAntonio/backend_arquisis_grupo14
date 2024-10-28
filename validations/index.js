@@ -66,14 +66,16 @@ async function sendValidationToApi(validation) {
 
 async function sendValidationToBroker(requestInfo) {
     try {
-      const { request } = requestInfo;
-      const { valid } = requestInfo;
+      
+     
+      
       const validationJSON = {
-        request_id: request.requestId,
-        group_id: request.groupId,
-        seller: request.seller,
-        valid,
+        request_id: requestInfo.request_id,
+        group_id: requestInfo.group_id,
+        seller: requestInfo.seller,
+        valid: requestInfo.valid,
       };
+      
       console.log('Sending validation to broker:', validationJSON);
       const requestData = JSON.stringify(validationJSON);
       client.publish(TOPIC, requestData);
@@ -98,6 +100,7 @@ router.post('/', async (ctx) => {
     try {
       console.log('Received validation:', ctx.request.body);
       await sendValidationToBroker(ctx.request.body);
+    
       ctx.body = ctx.request.body;
       ctx.status = 201;
     } catch (error) {

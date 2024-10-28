@@ -478,7 +478,7 @@ available-typed-arrays@^1.0.7:
   dependencies:
     possible-typed-array-names "^1.0.0"
 
-axios@^1.7.7:
+axios@^1.6.5, axios@^1.7.7:
   version "1.7.7"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.7.7.tgz#2f554296f9892a72ac8d8e4c5b79c14a91d0a47f"
   integrity sha512-S4kL7XrjgBmvdGut0sN3yJxqYzrDOnivkBiN0OFs6hLiUam3UPvswUo0kqGyhqUZGEOytHyumEdXsAkgCOUf3Q==
@@ -2867,6 +2867,13 @@ touch@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/touch/-/touch-3.1.1.tgz#097a23d7b161476435e5c1344a95c0f75b4a5694"
   integrity sha512-r0eojU4bI8MnHr8c5bNo7lJDdI2qXlWWJk6a9EAFG7vbhTjElYhBVS3/miuE0uOuoLdb8Mc/rVfsmm6eo5o9GA==
+
+transbank-sdk@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/transbank-sdk/-/transbank-sdk-5.0.0.tgz#31171722e8b0de177052b26689153e39cc3d4eeb"
+  integrity sha512-hHvkPPSkcIZpjrFtwGhFfG6HNLstxDv4PLLsuRtiKuadA6o7Vd8P74XmFUub31MClIGmF2h+aGMj4ZO7XoT1RQ==
+  dependencies:
+    axios "^1.6.5"
 
 tsconfig-paths@^3.15.0:
   version "3.15.0"

@@ -57,6 +57,7 @@ function parseRequestData(requestData) {
       datetime: requestString.datetime,
       quantity: requestString.quantity,
       seller: requestString.seller,
+      wallet: requestString.wallet
     };
     // Formato datetime: 'YYYY-MM-ddThh:mm:ss UTC)
     return request;
@@ -67,6 +68,7 @@ function parseRequestData(requestData) {
 
 async function sendRequestToApi(request) {
   try {
+    console.log('en send request to api', request)
     const response = await axios.post(`${process.env.API_URL}/requests`, request);
     console.log('Request send to API:', response.data);
   } catch (error) {
@@ -106,11 +108,13 @@ async function sendRequestToBroker(request) {
         datetime : request.datetime,
         quantity: request.quantity,
         seller: 0,
-        wallet: true
+        wallet: request.wallet
     };
   
     // Cambiar formato de fecha
-    const requestData = JSON.stringify(parsedRequest); // Date Handle
+    console.log('mira aqui', parsedRequest.request_id) 
+    const requestData = JSON.stringify(parsedRequest);
+    // Date Handle
     client.publish(TOPIC, requestData);
     console.log('Request published to broker:', requestData);
   } catch (error) {

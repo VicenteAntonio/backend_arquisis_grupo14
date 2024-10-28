@@ -120,9 +120,6 @@ router.post('requests.create', '/', async (ctx) => {
       all_data_request.request_id = uuidv4();
       console.log("Nuevo request_id generado:", all_data_request.request_id);
     }
-
-    
-
     const userIP = await getUserIP();
     const location = await getLocationFromIP(userIP);
 

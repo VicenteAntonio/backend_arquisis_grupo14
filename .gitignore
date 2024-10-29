@@ -1,10 +1,14 @@
 listener/node_modules
 api/node_modules
-api/node_modules/
-requests/node_modules
+./api/node_modules/
+request/node_modules
 validations/node_modules
+history/node_modules
+recommendation_service/jobsMaster/node_modules
+recommendation_service/workers/node_modules
 /node_modules
 node_modules
+**/node_modules/
 .DS_Store
 .env
 **/.env
@@ -17,3 +21,8 @@ grupo14arquisis.pem
 ./listener/node_modules
 ./listener/.env
 ./requests/.env
+./recommendation_service/jobsMaster/node_modules
+./recommendation_service/workers/node_modules
+./recommendation_service/jobsMaster/.env
+./recommendation_service/workers/.env
+.recommendation_service/.env

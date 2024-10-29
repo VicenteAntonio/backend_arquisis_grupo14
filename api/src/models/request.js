@@ -1,7 +1,5 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Request extends Model {
     /**
@@ -28,22 +26,23 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    datetime: DataTypes.STRING,
-    quantity: DataTypes.INTEGER,
-    seller: DataTypes.INTEGER,
-    location: {
-      type: DataTypes.STRING,
-      allowNull: true, 
+      datetime: DataTypes.STRING,
+      quantity: DataTypes.INTEGER,
+      seller: DataTypes.INTEGER,
+      location: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'pending',
+      },
     },
-    status: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: 'pending',
-    },
-    
-  }, {
-    sequelize,
-    modelName: 'Request',
-  });
+    {
+      sequelize,
+      modelName: 'Request',
+    }
+  );
   return Request;
 };

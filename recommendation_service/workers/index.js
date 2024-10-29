@@ -97,7 +97,7 @@ async function getMatchesByTeams(purchases) {
     WHERE homeTeamName IN (:teams) AND awayTeamName IN (:teams)
     SORT BY league_name`;
 
-    const matches = await sequelize.query(query, {
+    const matches = await sequelize.query(query2, {
       replacements: { teams },
       type: QueryTypes.SELECT
     })

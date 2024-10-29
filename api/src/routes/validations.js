@@ -102,10 +102,11 @@ router.post('validations.create', '/', async (ctx) => {
       status: 'accepted',
     });
 
-    console.log(`Actualizando el wallet del usuario con token ${user_token}`);
-    await axios.patch(`${process.env.API_URL}/users/${user_token}`, {
-      amount: -(cantidad * 1000),
-    });
+    if (request.wallet) {  
+      console.log(`Actualizando el wallet del usuario con token ${user_token}`);
+      await axios.patch(`${process.env.API_URL}/users/${user_token}`, {
+        amount: -(cantidad * 1000),
+      });}
 
     ctx.body = validation;
     ctx.status = 201;

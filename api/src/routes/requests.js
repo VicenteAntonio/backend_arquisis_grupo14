@@ -35,19 +35,6 @@ router.post('requests.create', '/', async (ctx) => {
 
     const all_data_request = ctx.request.body;
 
-    // Obtener el deposit_token
-    const deposit_token = all_data_request.deposit_token;
-
-    // Agregar un log para ver qué valor está recibiendo como deposit_token
-    console.log('Valor de deposit_token recibido:', `${deposit_token}`);
-
-    // Hacer la solicitud a la API de usuarios para obtener el wallet
-    const userResponse = await axios.get(
-      `${process.env.API_URL}/users/${deposit_token}`
-    );
-    let user = userResponse.data;
-    console.log('En post de create de la API');
-
     // Obtener el user_token
     const user_token = all_data_request.user_token;
 
@@ -83,7 +70,7 @@ router.post('requests.create', '/', async (ctx) => {
     // si lo hicimos nosotros
     if (user) {
       console.log('se encontró al usuario');
-      if (totalAmountRequired > user.wallet) {
+      if (totalAmountRequired > user.wallet && all_data_request.wallet == true) {
         console.log('Fondos insuficientes, la solicitud será rechazada');
 
         // Rechazar la solicitud si no tiene suficientes fondos

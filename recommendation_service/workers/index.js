@@ -38,131 +38,6 @@ const sequelize = new Sequelize(
 // Calculo de las recomendaciones
 // Primero, se obtiene el resultado de todas las compras de un usuario
 
-async function getAllPurchasesResults(user_token) {
-  try {
-    // obtener todas las compras de un usuario por el user_token
-    const currentDate = new Date();
-
-    // const user = await User.findOne({
-    //   where: { user_token },
-    //   include: [
-    //     {
-    //       model: Request,
-    //       where: {
-    //         //   status: {
-    //         //     [Op.or] : [],
-    //         //   }, // status de la request es completa
-    //         datetime: {
-    //           [Op.lt]: currentDate, // fecha menor que la actual
-    //         },
-    //       },
-    //     },
-    //   ],
-    // });
-    // if (!user) {
-    //   throw new Error('User not found');
-    // }
-    // return user.requests; // retorno las requests
-    const response = await axios.get(`${API_URL}/requests`, {
-      params: {
-        user_token: token,
-      }
-    }
-    );
-    return response.data;
-  } catch (error) {
-    console.log(`Error getting purchases results: ${error.message}`);
-    throw error;
-  }
-}
-
-// Luego, se obtienen los partidos de los equipos que estaban involucrados en todas sus compras (importante que aparezcan por liga)
-
-async function getMatchesByTeams(purchases) {
-  try {
-    const teams = purchases.map((purchase) => purchase.fixture.homeTeam);
-    // important to get the teams by league
-    const leagues = purchases.map((purchase) => purchase.leagueName);
-
-    const matches = await Fixture.findAll({
-      where: {
-        [Op.or]: [
-          {
-            homeTeam: {
-              [Op.in]: teams,
-            },
-          },
-          {
-            awayTeam: {
-              [Op.in]: teams,
-            },
-          },
-        ],
-        league: {
-          [Op.in]: leagues,
-        },
-      },
-    });
-
-    return matches;
-  } catch (error) {
-    console.log(`Error getting matches by teams: ${error.message}`);
-    throw error;
-  }
-}
-
-// después, se calcula cuantas veces ha acertado en todas las apuestas a los resultados cuando uno de los equipos de
-// los proximos partidos ha estado involucrado, tomando en cuenta cuantas veces apostó en el mismo partido.
-
-async function calculateAsserts(user_token, matches) {
-  try {
-    const currentDate = new Date(); // fecha actual
-
-    const user = await User.findOne({
-      // obtener usuario por user_token
-      where: { user_token }, // user_token
-      include: [
-        {
-          model: Request, // modelo de request
-          where: {
-            //   status: {
-            //     [Op.or] : [],
-            //   }, // status de la request es completa
-            datetime: {
-              [Op.lt]: currentDate, // fecha menor que la actual
-            },
-          },
-        },
-      ],
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-    // reviso los acertados, Winner es correcto
-
-    const asserts = matches.map((match) => {
-      const matchPurchases = user.requests.filter(
-        (purchase) => purchase.fixture_id === match.id
-      );
-
-      const matchAsserts = matchPurchases.filter(
-        (purchase) => purchase.result === match.result
-      );
-
-      return {
-        match, // partido
-        asserts: matchAsserts.length, // cantidad de aciertos
-      };
-    });
-
-    return asserts; // retorno los aciertos
-  } catch (error) {
-    console.log(`Error calculating asserts: ${error.message}`);
-    throw error;
-  }
-}
-
 async function saveRecommendation(user_token, fixtureId) {
   try {
     const response = await axios.post(
@@ -176,50 +51,122 @@ async function saveRecommendation(user_token, fixtureId) {
   }
 }
 
-// Luego, se calculan los beneficios de los partidos para cada liga tomando en cuenta la cantidad de aciertos antes calculada,
-// la cantidad de partidos de los equipos con los que acerto y la probabilidad.
-async function calculatePonderation(asserts, round, odds) {
+async function getAllPurchasesResults(user_token) {
   try {
-    // asserts*league_round/(sum of odds)
+    // obtener todas las compras de un usuario por el user_token
+    const currentDate = new Date();
 
-    const ponderation = asserts.map((assert) => {
-      const matchOdds = odds.find((odd) => odd.fixture.id === assert.match.id);
-      const matchPurchases = assert.matchPurchases;
-      const matchTeams = [
-        assert.match.homeTeamName, // ver si recibe id, name o logo
-        assert.match.awayTeamName, // ver si recibe id, name o logo
-      ];
+    const query = 
+    `SELECT * FROM requests
+    WHERE user_token = (SELECT user_token FROM users WHERE user_token = :user_token)
+    AND status = 'accepted'`;
 
-      const matchOddsSum = matchOdds.odds.reduce((acc, odd) => acc + odd, 0);
+    if (!user) {
+      throw new Error('User not found');
+    }
 
-      const matchPurchasesSum = matchPurchases.reduce(
-        (acc, purchase) => acc + purchase.quantity,
-        0
-      );
+    const requests = await sequelize.query(query, {
+      replacements: { user_token },
+      type: QueryTypes.SELECT
+    })
 
-      const matchPurchasesTeams = matchPurchases.reduce((acc, purchase) => {
-        if (matchTeams.includes(purchase.fixture.homeTeam)) {
-          acc.push(purchase.fixture.homeTeam);
-        }
-        if (matchTeams.includes(purchase.fixture.awayTeam)) {
-          acc.push(purchase.fixture.awayTeam);
-        }
-        return acc;
-      }, []);
+    return requests; // retorno las requests
+  } catch (error) {
+    console.log(`Error getting purchases results: ${error.message}`);
+    throw error;
+  }
+}
 
-      const matchPurchasesTeamsSum = matchPurchasesTeams.length;
+async function getMatchesByTeams(purchases) {
+  try {
+    const fixtureIds = purchases.map((purchase) => purchase.fixture_id);
 
-      const pond =
-        (assert.asserts * round) /
-        (matchOddsSum + matchPurchasesTeamsSum + matchPurchasesSum);
+    const query = 
+    `SELECT homeTeamName, awayTeamName FROM fixtures
+    WHERE fixtureId IN (:fixtureIds)
+    AND datetime > NOW()
+    AND SORT BY league_name`;
 
-      return {
-        fixture: assert.match,
-        pond,
-      };
-    });
+    const teams = await sequelize.query(query, {
+      replacements: { fixtureIds },
+      type: QueryTypes.SELECT
+    })
 
-    return ponderation;
+    const query2 = 
+    `SELECT * FROM fixtures
+    WHERE homeTeamName IN (:teams) AND awayTeamName IN (:teams)
+    SORT BY league_name`;
+
+    const matches = await sequelize.query(query, {
+      replacements: { teams },
+      type: QueryTypes.SELECT
+    })
+
+    return matches;
+  } catch (error) {
+    console.log(`Error getting matches by teams: ${error.message}`);
+    throw error;
+  }
+}
+
+async function calculateAsserts(user_token, purchases) {
+  try {
+    const matchesIds = purchases.map((match) => match.fixture_id);
+
+    const query = 
+    `SELECT * FROM fixtures
+    WHERE fixtureId IN (:matchesIds)`;
+
+    const matches = await sequelize.query(
+      query,
+      {
+        replacements: { matchesIds },
+        type: QueryTypes.SELECT
+      }
+    )
+
+    var resultsAsserts = 0;
+
+    // identificar cuantas veces ha acertado
+    for (const match of matches) {
+      goalsHome = match.goalsHome;
+      goalsAway = match.goalsAway;
+      if (goalsHome > goalsAway) {
+        winner = match.homeTeamName;
+      }
+      if (goalsHome < goalsAway) {
+        winner = match.awayTeamName;
+      }
+      else {
+        winner = 'Empate';
+      }
+
+      const queryFixture =
+      `SELECT * FROM requests
+      WHERE fixture_id = :fixtureId`;
+
+      const request = await sequelize.query(queryFixture, {
+        replacements: { fixtureId },
+        type: QueryTypes.SELECT
+      });
+
+      if (request.result == winner) {
+        resultsAsserts++;
+      }
+    }
+    return matchesAsserts; // retorno la cantidad de aciertos
+  } catch (error) {
+    console.log(`Error calculating asserts: ${error.message}`);
+    throw error;
+  }
+}
+
+async function calculatePonderation(asserts, round, oddsHome, oddsAway) {
+  try {
+    const round = str.round(/\d+/); // Busca uno o más dígitos en el string
+    const roundNumber = match ? parseInt(round[0], 10) : null;
+    const pond = (asserts * roundNumber) / (oddsHome + oddsAway); // calcular ponderación
+    return pond;
   } catch (error) {
     console.log(`Error calculating ponderation: ${error.message}`);
     throw error;
@@ -231,28 +178,28 @@ async function calculatePonderation(asserts, round, odds) {
 async function processor(job) {
   try {
     const user_token = job.data.user_token; // user_token
-    const purchases = await getAllPurchasesResults(user_token); // obtener todas las compras de un usuario
+    const purchases = await getAllPurchasesResults(user_token); // REQUESTS
 
     const matches = await getMatchesByTeams(purchases); // obtener los partidos de los equipos que estaban involucrados en todas sus compras
 
-    const asserts = await calculateAsserts(user_token, matches); // calcular cuantas veces ha acertado en todas las apuestas a los resultados
+    let recommendations = [];
 
-    const odds = await axios.get(
-      `${process.env.ODDS_SERVICE_URL}/odds?league=${league}`
-    ); // obtener las probabilidades de los partidos
+    for (const match of matches) {
+      const matchAssert = await calculateAsserts(user_token, purchases); 
+      const ponderation = await calculatePonderation(matchAssert, match.round, match.oddsHome, match.oddsAway); 
+      recommendations.push({ match, ponderation });
+    }
 
-    const round = 1; // round de la liga
-
-    const recommendations = await calculatePonderation(asserts, round, odds); // calcular los beneficios de los partidos para cada liga
-
-    
+    // Ordena las recomendaciones según la ponderación, donde cada elemento es un objeto con el partido y la ponderación
     const sortedRecommendations = recommendations
-      .sort((a, b) => b.pond - a.pond)
+      .sort((a, b) => b.ponderation - a.ponderation)
       .slice(0, 3);
 
+    return sortedRecommendations;
+
     await Promise.all(
-      recommendations.map(async (recommendation) => {
-        await saveRecommendation(user_token, recommendation.fixture.id);
+      sortedRecommendations.map(async (sortedRecommendations) => {
+        await saveRecommendation(user_token, sortedRecommendation.fixture.id);
       })
     );
   } catch (error) {

@@ -18,7 +18,7 @@ const {
       }
     }
     Recommendation.init({
-      username: {
+      user_token: {
         type: DataTypes.STRING,
         allowNull: false,
       },

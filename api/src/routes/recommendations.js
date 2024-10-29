@@ -17,14 +17,14 @@ router.post('recommendations.create', '/', async (ctx) => {
 
 router.get('recommendations.list', '/', async (ctx) => {
   try {
-    const { username } = ctx.query;
-    if (!username) {
+    const { user_token } = ctx.query;
+    if (!user_token) {
       ctx.status = 400;
-      ctx.body = { error: 'Invalid username' };
+      ctx.body = { error: 'Invalid user_token' };
       return;
     }
     const recommendations = await ctx.orm.Recommendation.findAll({
-      where: { username },
+      where: { user_token },
       limit: 3,
       order: [['createdAt', 'DESC']],
     });

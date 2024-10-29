@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const axios = require('axios');
 const moment = require('moment');
+const dotenv = require('dotenv');
 
 const router = new Router();
 
@@ -8,18 +9,25 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+
 async function findFixture(request) {
   try {
-    console.log('Buscando fixture con fixtureId:', request.departureAirport);
-    const response = await axios.get(`${process.env.API_URL}/fixtures/find`, {
-      params: {
-        fixtureId: request.departureAirport,
-      },
-    });
+    const response = await axios.get(`${process.env.API_URL}/fixtures/${request.fixture_id}`);
     console.log('Respuesta de fixture:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error finding fixture:', error);
+  }
+}
+
+async function createFixtureRecommendation(request) {
+  try {
+    console.log('Creating fixture recommendations');
+    const fixture = await findFixture(request);
+    const user_token = request.user_token;
+    await axios.post(`${process.env.JOBS_MASTER_URL}/job`, { fixture, user_token });
+  } catch (error) {
+    console.error('Error sending fixture info to JobsMaster:', error);
   }
 }
 
@@ -95,6 +103,10 @@ router.post('validations.create', '/', async (ctx) => {
       ctx.body = validation;
       ctx.status = 201;
       return;
+    }
+
+    if (valid) {
+      createFixtureRecommendation(request, ctx)
     }
 
     console.log(`Compra aceptada para request ${request_id}`);

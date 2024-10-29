@@ -26,7 +26,7 @@ console.log('Starting worker...');
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
-  process.env.DB_USERNAME,
+  process.env.DB_user_token,
   process.env.DB_PASSWORD,
   {
     host: process.env.DB_HOST,
@@ -38,31 +38,38 @@ const sequelize = new Sequelize(
 // Calculo de las recomendaciones
 // Primero, se obtiene el resultado de todas las compras de un usuario
 
-async function getAllPurchasesResults(username) {
+async function getAllPurchasesResults(user_token) {
   try {
-    // obtener todas las compras de un usuario por el username
+    // obtener todas las compras de un usuario por el user_token
     const currentDate = new Date();
 
-    const user = await User.findOne({
-      where: { username },
-      include: [
-        {
-          model: Request,
-          where: {
-            //   status: {
-            //     [Op.or] : [],
-            //   }, // status de la request es completa
-            datetime: {
-              [Op.lt]: currentDate, // fecha menor que la actual
-            },
-          },
-        },
-      ],
-    });
-    if (!user) {
-      throw new Error('User not found');
+    // const user = await User.findOne({
+    //   where: { user_token },
+    //   include: [
+    //     {
+    //       model: Request,
+    //       where: {
+    //         //   status: {
+    //         //     [Op.or] : [],
+    //         //   }, // status de la request es completa
+    //         datetime: {
+    //           [Op.lt]: currentDate, // fecha menor que la actual
+    //         },
+    //       },
+    //     },
+    //   ],
+    // });
+    // if (!user) {
+    //   throw new Error('User not found');
+    // }
+    // return user.requests; // retorno las requests
+    const response = await axios.get(`${API_URL}/requests`, {
+      params: {
+        user_token: token,
+      }
     }
-    return user.requests; // retorno las requests
+    );
+    return response.data;
   } catch (error) {
     console.log(`Error getting purchases results: ${error.message}`);
     throw error;
@@ -107,13 +114,13 @@ async function getMatchesByTeams(purchases) {
 // después, se calcula cuantas veces ha acertado en todas las apuestas a los resultados cuando uno de los equipos de
 // los proximos partidos ha estado involucrado, tomando en cuenta cuantas veces apostó en el mismo partido.
 
-async function calculateAsserts(username, matches) {
+async function calculateAsserts(user_token, matches) {
   try {
     const currentDate = new Date(); // fecha actual
 
     const user = await User.findOne({
-      // obtener usuario por username
-      where: { username }, // username
+      // obtener usuario por user_token
+      where: { user_token }, // user_token
       include: [
         {
           model: Request, // modelo de request
@@ -152,6 +159,19 @@ async function calculateAsserts(username, matches) {
     return asserts; // retorno los aciertos
   } catch (error) {
     console.log(`Error calculating asserts: ${error.message}`);
+    throw error;
+  }
+}
+
+async function saveRecommendation(user_token, fixtureId) {
+  try {
+    const response = await axios.post(
+      `${process.env.API_URL}/recommendations`,
+      { user_token, fixtureId },
+    );
+    console.log(`Recommendation saved: ${response.data.id}`);
+  } catch (error) {
+    console.error(`Error saving recommendation: ${error.message}`);
     throw error;
   }
 }
@@ -210,12 +230,12 @@ async function calculatePonderation(asserts, round, odds) {
 
 async function processor(job) {
   try {
-    const username = job.data.username; // username
-    const purchases = await getAllPurchasesResults(username); // obtener todas las compras de un usuario
+    const user_token = job.data.user_token; // user_token
+    const purchases = await getAllPurchasesResults(user_token); // obtener todas las compras de un usuario
 
     const matches = await getMatchesByTeams(purchases); // obtener los partidos de los equipos que estaban involucrados en todas sus compras
 
-    const asserts = await calculateAsserts(username, matches); // calcular cuantas veces ha acertado en todas las apuestas a los resultados
+    const asserts = await calculateAsserts(user_token, matches); // calcular cuantas veces ha acertado en todas las apuestas a los resultados
 
     const odds = await axios.get(
       `${process.env.ODDS_SERVICE_URL}/odds?league=${league}`
@@ -225,20 +245,16 @@ async function processor(job) {
 
     const recommendations = await calculatePonderation(asserts, round, odds); // calcular los beneficios de los partidos para cada liga
 
+    
     const sortedRecommendations = recommendations
       .sort((a, b) => b.pond - a.pond)
-      .slice(0, 3); // ordenar los partidos por beneficios y devolver los primeros 3
+      .slice(0, 3);
 
-    return sortedRecommendations;
-    // const sortedRecommendations = recommendations
-    //   .sort((a, b) => b.pond - a.pond)
-    //   .slice(0, 3);
-
-    // await Promise.all(
-    //   recommendations.map(async (recommendation) => {
-    //     await saveRecommendation(username, recommendation.fixture.id);
-    //   })
-    // );
+    await Promise.all(
+      recommendations.map(async (recommendation) => {
+        await saveRecommendation(user_token, recommendation.fixture.id);
+      })
+    );
   } catch (error) {
     console.log(`Error processing job: ${error.message}`);
     throw error;

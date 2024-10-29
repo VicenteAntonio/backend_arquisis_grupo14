@@ -50,17 +50,15 @@ router.get('/job/:id', async (ctx) => {
 router.post('/job', async (ctx) => {
   // Logica crear job desde parametros del backend
   try {
-    const { fixture, username, ipAddress } = ctx.request.body;
-    if (!fixture || !username || !ipAddress) {
+    const { fixture, user_token } = ctx.request.body;
+    console.log(fixture);
+    console.log(user_token);
+    if (!fixture || !user_token) {
       ctx.status = 400;
       ctx.body = { error: 'Missing parameters' };
       return;
     }
-    const job = await recommendationQueue.add('recommendation', {
-      fixture,
-      username,
-      ipAddress,
-    });
+    const job = await recommendationQueue.add('recommendation', { fixture, user_token });
     ctx.body = { jobId: job.id };
   } catch (error) {
     ctx.status = 500;

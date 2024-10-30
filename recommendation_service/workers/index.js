@@ -26,7 +26,7 @@ console.log('Starting worker...');
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
-  process.env.DB_user_token,
+  process.env.DB_USERNAME,
   process.env.DB_PASSWORD,
   {
     host: process.env.DB_HOST,
@@ -57,13 +57,10 @@ async function getAllPurchasesResults(user_token) {
     const currentDate = new Date();
 
     const query = 
-    `SELECT * FROM requests
-    WHERE user_token = (SELECT user_token FROM users WHERE user_token = :user_token)
-    AND status = 'accepted'`;
+    `SELECT * FROM "Requests"
+    WHERE user_token = (SELECT user_token FROM "Users" WHERE user_token = :user_token)
+    AND status = 'accepted';`;
 
-    if (!user) {
-      throw new Error('User not found');
-    }
 
     const requests = await sequelize.query(query, {
       replacements: { user_token },
@@ -82,23 +79,27 @@ async function getMatchesByTeams(purchases) {
     const fixtureIds = purchases.map((purchase) => purchase.fixture_id);
 
     const query = 
-    `SELECT homeTeamName, awayTeamName FROM fixtures
-    WHERE fixtureId IN (:fixtureIds)
-    AND datetime > NOW()
-    AND SORT BY league_name`;
+    `SELECT "homeTeamName", "awayTeamName" FROM "Fixtures"
+    WHERE "fixtureId" IN (:fixtureIds)
+    AND "fixtureDate" > NOW()
+    ORDER BY "leagueName";`;
 
     const teams = await sequelize.query(query, {
       replacements: { fixtureIds },
       type: QueryTypes.SELECT
     })
 
+    const homeTeams = teams.map(team => team.homeTeamName);
+    const awayTeams = teams.map(team => team.awayTeamName);
+
     const query2 = 
-    `SELECT * FROM fixtures
-    WHERE homeTeamName IN (:teams) AND awayTeamName IN (:teams)
-    SORT BY league_name`;
+    `SELECT * FROM "Fixtures"
+    WHERE "homeTeamName" IN (:homeTeams) OR "awayTeamName" IN (:awayTeams) 
+    OR "homeTeamName" IN (:awayTeams) OR "awayTeamName" IN (:homeTeams)
+    ORDER BY "leagueName";`;
 
     const matches = await sequelize.query(query2, {
-      replacements: { teams },
+      replacements: { homeTeams, awayTeams },
       type: QueryTypes.SELECT
     })
 
@@ -111,11 +112,14 @@ async function getMatchesByTeams(purchases) {
 
 async function calculateAsserts(user_token, purchases) {
   try {
+    console.log("-----",purchases);
     const matchesIds = purchases.map((match) => match.fixture_id);
 
+    console.log(matchesIds)
+
     const query = 
-    `SELECT * FROM fixtures
-    WHERE fixtureId IN (:matchesIds)`;
+    `SELECT * FROM "Fixtures"
+    WHERE "fixtureId" IN (:matchesIds);`;
 
     const matches = await sequelize.query(
       query,
@@ -141,9 +145,11 @@ async function calculateAsserts(user_token, purchases) {
         winner = 'Empate';
       }
 
+      fixtureId = match.fixtureId;
+
       const queryFixture =
-      `SELECT * FROM requests
-      WHERE fixture_id = :fixtureId`;
+      `SELECT * FROM "Requests"
+      WHERE "fixture_id" = :fixtureId;`;
 
       const request = await sequelize.query(queryFixture, {
         replacements: { fixtureId },
@@ -154,17 +160,23 @@ async function calculateAsserts(user_token, purchases) {
         resultsAsserts++;
       }
     }
-    return matchesAsserts; // retorno la cantidad de aciertos
+    return resultsAsserts; // retorno la cantidad de aciertos
   } catch (error) {
     console.log(`Error calculating asserts: ${error.message}`);
     throw error;
   }
 }
 
-async function calculatePonderation(asserts, round, oddsHome, oddsAway) {
+async function calculatePonderation(asserts, actualRound, oddsHome, oddsAway) {
   try {
-    const round = str.round(/\d+/); // Busca uno o más dígitos en el string
-    const roundNumber = match ? parseInt(round[0], 10) : null;
+//     const myRe = /d(b+)d/g;
+// const myArray = myRe.exec("cdbbdbsbz");
+
+    const regularExp = /\d+/;
+    const round = regularExp.exec(actualRound);
+    console.log(round);
+   // const round = actualRound.round(/\d+/); // Busca uno o más dígitos en el string --> round: "Liga inglesa - 13"
+    const roundNumber = round ? parseInt(round[0], 10) : null;
     const pond = (asserts * roundNumber) / (oddsHome + oddsAway); // calcular ponderación
     return pond;
   } catch (error) {
@@ -195,13 +207,17 @@ async function processor(job) {
       .sort((a, b) => b.ponderation - a.ponderation)
       .slice(0, 3);
 
-    return sortedRecommendations;
+    
 
     await Promise.all(
-      sortedRecommendations.map(async (sortedRecommendations) => {
-        await saveRecommendation(user_token, sortedRecommendation.fixture.id);
+      sortedRecommendations.map(async (sortedRecommendation) => {
+        console.log(`Saving recommendation for fixture ${sortedRecommendation.match.fixtureId}`);
+        await saveRecommendation(user_token, sortedRecommendation.match.fixtureId);
       })
     );
+
+    return sortedRecommendations;
+    
   } catch (error) {
     console.log(`Error processing job: ${error.message}`);
     throw error;

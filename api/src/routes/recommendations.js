@@ -31,7 +31,9 @@ router.get('recommendations.list', '/', async (ctx) => {
 
     const fixturesRecommendations = await Promise.all(
       recommendations.map(async (recommendation) => {
-        const fixture = await ctx.orm.Fixture.findByPk(recommendation.fixtureId);
+        const fixture = await ctx.orm.Fixture.findOne({
+          where : {fixtureId: recommendation.fixtureId}
+        });
         return { recommendation, fixture };
       }),
     );

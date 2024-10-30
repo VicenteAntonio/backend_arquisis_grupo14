@@ -42,6 +42,16 @@ router.post('/fixtures.create', '/', async (ctx) => {
           result: `${receivedfixture.goals.home} - ${receivedfixture.goals.away}`,
         };
 
+        // if fixture already exists, do not create it
+        const fixture = await ctx.orm.Fixture.findOne({
+          where: { fixtureId: fixtureToAdd.fixtureId },
+        });
+
+        if (fixture) {
+          console.log(`Fixture ${fixtureToAdd.fixtureId} already exists`);
+          return;
+        }
+
         await ctx.orm.Fixture.create(fixtureToAdd);
       })
     );

@@ -13,6 +13,7 @@ node_modules
 .env
 **/.env
 grupo14arquisis.pem
+grpo14arquisis.pem
 .env
 /api/.env
 /api/node_modules

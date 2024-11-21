@@ -24,6 +24,9 @@ module.exports = {
       requests: {
         type: Sequelize.JSON,
       },
+      admin: {
+        type: Sequelize.BOOLEAN,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

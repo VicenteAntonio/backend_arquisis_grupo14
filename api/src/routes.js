@@ -5,8 +5,8 @@ const validations = require('./routes/validations.js');
 const users = require('./routes/users.js');
 const transactions = require('./routes/transactions.js');
 const recommendations = require('./routes/recommendations.js');
-const auctions = require('./routes/auctions');
-const proposals = require('./routes/proposals');
+const auctions = require('./routes/auctions.js');
+const proposals = require('./routes/proposals.js');
 
 const router = new Router();
 

@@ -1,7 +1,7 @@
 const Router = require('koa-router');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
-const { isAdmin, verifyToken } = require('../utils/authorization');
+const { isAdmin, verifyToken } = require('../../utils/authorization');
 
 const router = new Router();
 

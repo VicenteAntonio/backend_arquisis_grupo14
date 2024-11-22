@@ -131,5 +131,3 @@ router.post('validations.create', '/', async (ctx) => {
 
 
 module.exports = router;
-
-module.exports = router;

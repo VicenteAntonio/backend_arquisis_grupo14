@@ -21,7 +21,8 @@
     "sequelize": "^6.37.3",
     "sequelize-cli": "^6.6.2",
     "transbank-sdk": "^5.0.0",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "winston": "^3.17.0"
   },
   "scripts": {
     "start": "node src/index.js",

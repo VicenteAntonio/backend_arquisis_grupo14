@@ -1,10 +1,20 @@
 /* eslint-disable prefer-destructuring */
 const dotenv = require('dotenv');
 const { jwtDecode } = require('jwt-decode');
+const winston = require('winston');
 
 dotenv.config();
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
 
 async function isAdmin(ctx, next) {
+  console.log("-----isAdmin-----",ctx);
   await next();
   let token = null;
   if (ctx.request.header.authorization) {
@@ -26,6 +36,10 @@ async function verifyToken(ctx, next) {
       ctx.throw(401, 'Token not found');
     }
     const decoded = jwtDecode(token);
+
+    // probando con más tiempo de duración del token-- decoded.exp: tiempo de expiracion del token
+    logger.info("-----token.....", { exp: decoded.exp });
+    const currentTime = new Date().getTime() / 1000;
     ctx.state.user = decoded;
     await next();
   } catch (error) {

@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@koa/cors": "^5.0.0"
+    "@koa/cors": "^5.0.0",
+    "sequelize-cli": "^6.6.2"
   },
   "devDependencies": {
     "prettier": "^3.3.3"

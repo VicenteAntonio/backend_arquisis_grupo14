@@ -9,10 +9,20 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Request.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        targetKey: 'id',
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      });
     }
   }
   Request.init({
-    request_id: DataTypes.UUID,
+    request_id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     group_id: DataTypes.STRING,
     fixture_id: DataTypes.INTEGER,
     league_name: DataTypes.STRING,
@@ -20,29 +30,32 @@ module.exports = (sequelize, DataTypes) => {
     date: DataTypes.DATE,
     result: DataTypes.STRING,
     deposit_token: DataTypes.STRING,
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     user_token: DataTypes.STRING,
     wallet: DataTypes.BOOLEAN,
     reviewed: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-      datetime: DataTypes.STRING,
-      quantity: DataTypes.INTEGER,
-      seller: DataTypes.INTEGER,
-      location: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      status: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        defaultValue: 'pending',
-      },
+    datetime: DataTypes.STRING,
+    quantity: DataTypes.INTEGER,
+    seller: DataTypes.INTEGER,
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
-    {
-      sequelize,
-      modelName: 'Request',
-    }
-  );
+    status: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'pending',
+    },
+  }, {
+    sequelize,
+    modelName: 'Request',
+  }
+);
   return Request;
 };

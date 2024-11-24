@@ -16,6 +16,7 @@ services:
       - db
     env_file:
       - ./api/.env
+    command: sh -c "yarn sequelize-cli db:migrate && yarn start"
 
   db:
     image: postgres
@@ -28,6 +29,10 @@ services:
       - ./.env
     ports:
       - '5432:5432'
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
 
   listener:
     build:

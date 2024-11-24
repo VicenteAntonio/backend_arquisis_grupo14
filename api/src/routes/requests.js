@@ -69,7 +69,7 @@ router.post('requests.create', '/', async (ctx) => {
           `${process.env.API_URL}/users/${user_token}`
         );
         user = userResponse.data;
-        // Aquí puedes manejar los datos del usuario
+
       } catch (error) {
         console.error('Error al obtener el usuario:', error);
         // Maneja el error aquí, por ejemplo, devolviendo una respuesta de error
@@ -144,6 +144,7 @@ router.post('requests.create', '/', async (ctx) => {
     all_data_request.location = location;
     all_data_request.datetime = moment.utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
     all_data_request.seller = 0;
+    // all_data_request.user_token = user_token;
 
     // Crear la request
     console.log('se creará la request pending en la base de datos');
@@ -250,8 +251,7 @@ router.get('requests.show', '/:request_id', async (ctx) => {
 router.get('requests.list', '/', async (ctx) => {
   console.log("EEEEEEE", ctx)
   try {
-    const { user_token } = ctx.query;
-    console.log("AAAAAAA", user_token)
+    const { user_token } = ctx.query; // llega bien
     if (user_token) {
       const requests = await ctx.orm.Request.findAll({
         where: { user_token }, // AQUI ESTA EL ERROR
@@ -263,6 +263,7 @@ router.get('requests.list', '/', async (ctx) => {
       ctx.body = { error: 'Invalid username' };
     }
   } catch (error) {
+    console.log("AAAA OCURRIDO UN ERROR")
     ctx.body = { error: error.message };
     ctx.status = 500;
   }

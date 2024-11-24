@@ -11,9 +11,18 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      User.hasMany(models.Request, {
+        foreignKey: 'user_id',
+        sourceKey: 'id',
+      });
     }
   }
   User.init({
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     username: DataTypes.STRING,
     email: DataTypes.STRING,
     user_token: DataTypes.STRING,

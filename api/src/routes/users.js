@@ -19,7 +19,7 @@ router.get('/', async (ctx) => {
 
 // Obtener un usuario y actualizar su saldo basado en las apuestas ganadas
 router.get('/:user_token', async (ctx) => {
-  console.log("AAAAAA", ctx);
+  console.log("AAAAAA user_token", ctx);
   try {
     const { user_token } = ctx.params;
 
@@ -42,8 +42,6 @@ router.get('/:user_token', async (ctx) => {
     }
 
     // Obtener las solicitudes relacionadas con el usuario
-    console.log("AAAAAAAA");
-    console.log("AAAA user_token", user_token);
     let requestsResponse;
     try {
       requestsResponse = await axios.get(`${process.env.API_URL}/requests`, {
@@ -51,7 +49,7 @@ router.get('/:user_token', async (ctx) => {
       }); // +LOG
       console.log("requestsResponse", requestsResponse); /// +LOG
     } catch (error) {
-      console.error('Error obteniendo las solicitudes:', error); // Log para la depuración
+      console.error('Error obteniendo las solicitudes aaaaa:', error); // Log para la depuración
       ctx.body = { error: 'Error obteniendo las solicitudes' };
       ctx.status = 500; // Internal Server Error
       return;

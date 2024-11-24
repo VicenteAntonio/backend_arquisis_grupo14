@@ -6,6 +6,7 @@ const axios = require('axios');
 
 // Obtener el listado de todos los usuarios
 router.get('/', async (ctx) => {
+  console.log('se está intentando obtener los usuarios');
   try {
     const users = await ctx.orm.User.findAll();
     ctx.body = users;
@@ -18,13 +19,15 @@ router.get('/', async (ctx) => {
 
 // Obtener un usuario y actualizar su saldo basado en las apuestas ganadas
 router.get('/:user_token', async (ctx) => {
+  console.log("AAAAAA", ctx);
   try {
     const { user_token } = ctx.params;
 
     // Buscar al usuario por su token
     let user;
     try {
-      user = await ctx.orm.User.findOne({ where: { user_token } });
+      user = await ctx.orm.User.findOne({ where: { user_token } }); /// +LOG
+      console.log("user", user); /// +LOG
     } catch (error) {
       console.error('Error buscando al usuario:', error); // Log para la depuración
       ctx.body = { error: 'Error buscando al usuario' };
@@ -39,11 +42,14 @@ router.get('/:user_token', async (ctx) => {
     }
 
     // Obtener las solicitudes relacionadas con el usuario
+    console.log("AAAAAAAA");
+    console.log("AAAA user_token", user_token);
     let requestsResponse;
     try {
       requestsResponse = await axios.get(`${process.env.API_URL}/requests`, {
         params: { user_token: user_token }, // Cambié depositToken por user_token
-      });
+      }); // +LOG
+      console.log("requestsResponse", requestsResponse); /// +LOG
     } catch (error) {
       console.error('Error obteniendo las solicitudes:', error); // Log para la depuración
       ctx.body = { error: 'Error obteniendo las solicitudes' };
@@ -80,7 +86,8 @@ router.get('/:user_token', async (ctx) => {
         {
           params: { ids: fixtureIds.join(',') }, // Envía los IDs como un string separado por comas
         }
-      );
+      ); // +LOG
+      console.log("fixturesResponse", fixturesResponse); /// +LOG
     } catch (error) {
       console.error('Error obteniendo los fixtures:', error); // Log para la depuración
       ctx.body = { error: 'Error obteniendo los fixtures' };
@@ -126,8 +133,9 @@ router.get('/:user_token', async (ctx) => {
             `${process.env.API_URL}/requests/${request.request_id}`,
             {
               reviewed: true, // Actualizar el estado de la solicitud
-            }
+            } // +LOG
           );
+          console.log('se actualizó la request');
         } catch (error) {
           console.error(
             `Error actualizando la solicitud ${request.id}:`,
@@ -145,7 +153,8 @@ router.get('/:user_token', async (ctx) => {
       try {
         await axios.patch(`${process.env.API_URL}/users/${user_token}`, {
           amount: totalAmountToAdd, // Monto a añadir
-        });
+        }); // +LOG
+        console.log('se actualizó el saldo del usuario'); /// +LOG
       } catch (error) {
         console.error(
           `Error actualizando el saldo del usuario ${user_token}:`,

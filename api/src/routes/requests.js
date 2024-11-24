@@ -5,9 +5,13 @@ const moment = require('moment-timezone');
 
 const router = new Router();
 
-async function getUserIP() {
+async function getUserIP(user_token) {
   try {
-    const response = await axios.get('https://api.ipify.org?format=json');
+    const response = await axios.get('https://api.ipify.org?format=json', {
+      headers: {
+        'Authorization': `Bearer ${user_token}`
+      }
+    });
     const userIP = response.data.ip;
     return userIP;
   } catch (error) {
@@ -15,9 +19,14 @@ async function getUserIP() {
     return null;
   }
 }
-async function getLocationFromIP(ip) {
+
+async function getLocationFromIP(ip, user_token) {
   try {
-    const response = await axios.get(`http://ip-api.com/json/${ip}`);
+    const response = await axios.get(`http://ip-api.com/json/${ip}`, {
+      headers: {
+        'Authorization': `Bearer ${user_token}`
+      }
+    });
     const data = response.data;
     if (data.status === 'fail') {
       return 'Unknown'; // Devuelve "Unknown" si falla
@@ -43,8 +52,14 @@ router.post('requests.create', '/', async (ctx) => {
     // Agregar un log para ver qué valor está recibiendo como user_token
     console.log("Valor de user_token recibido:", `${user_token}`);
 
-    
-    
+    // Obtener la IP del usuario usando el user_token
+    const userIP = await getUserIP(user_token);
+    console.log('IP del usuario:', userIP);
+
+    // Obtener la ubicación del usuario desde la IP usando el user_token
+    const userLocation = await getLocationFromIP(userIP, user_token);
+    console.log('Ubicación del usuario:', userLocation);
+
     let user;
 
     if (user_token !== undefined) {
@@ -124,8 +139,7 @@ router.post('requests.create', '/', async (ctx) => {
       all_data_request.request_id = uuidv4();
       console.log("Nuevo request_id generado:", all_data_request.request_id);
     }
-    const userIP = await getUserIP();
-    const location = await getLocationFromIP(userIP);
+    const location = await getLocationFromIP(userIP, user_token);
 
     all_data_request.location = location;
     all_data_request.datetime = moment.utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
@@ -234,11 +248,13 @@ router.get('requests.show', '/:request_id', async (ctx) => {
 });
 
 router.get('requests.list', '/', async (ctx) => {
+  console.log("EEEEEEE", ctx)
   try {
     const { user_token } = ctx.query;
+    console.log("AAAAAAA", user_token)
     if (user_token) {
       const requests = await ctx.orm.Request.findAll({
-        where: { user_token },
+        where: { user_token }, // AQUI ESTA EL ERROR
       });
       ctx.body = requests;
       ctx.status = 200;

@@ -17,8 +17,31 @@ Sigue las instrucciones en la [guía oficial de Terraform](https://developer.has
 
 1. Ve a IAM en Amazon AWS.
 2. Crea un usuario.
-3. Añade la política de `EC2FullAccess`.
-4. Sigue estos pasos para configurar AWS CLI: [Guía de configuración del AWS CLI](https://docs.aws.amazon.com/es_es/cli/v1/userguide/cli-chap-configure.html).
+3. Añade la politica al usuario con los siguientes accesos a S3 y Cloudfront:
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [
+                "arn:aws:s3:::*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "cloudfront:*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
 
 ### 3. Obtener credenciales necesarias para configurar Terraform con AWS EC2
 

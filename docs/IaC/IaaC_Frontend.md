@@ -22,8 +22,6 @@ Sigue las instrucciones en la [guía oficial de Terraform](https://developer.has
 
 ### 3. Obtener las credenciales necesarias para configurar terraform con S3
 
-### 3. Obtener credenciales necesarias para configurar Terraform
-
 1. Ve a EC2 en Amazon AWS y selecciona "Lanzar instancia". Desde aquí debes obtener el AMI ID, Key y la región.
 2. Crea el archivo `main.tf` con la siguiente información, cambiando los valores de `ami`, `key_name` y `region` por los obtenidos:
 

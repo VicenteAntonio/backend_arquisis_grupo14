@@ -17,6 +17,19 @@ services:
     env_file:
       - ./api/.env
 
+  nginx:
+    build: 
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    ports:
+      - 80:80
+    depends_on: 
+      - api
+
   db:
     image: postgres
     container_name: postgres
@@ -140,7 +153,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./recommendation_service/workers:/app
-      - ./api:/app/api #montar el directorio api en /app/api
+      - ./api:/app/api 
     networks:
       - worker
       - app-network

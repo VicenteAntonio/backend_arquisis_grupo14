@@ -18,7 +18,8 @@ jobs:
 
     strategy:
       matrix:
-        project: [api, listener, requests, validations, history]
+        project: [api, listener, requests, validations, recommendation-service/jobsMaster, recommendation-service/workers, auctions-proposals]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -55,10 +56,10 @@ jobs:
           node-version: '20'
 
       - name: Make script executable
-        run: chmod +x ./scriptsCI/bump_version.sh
+        run: chmod +x ./scripts/bump_version.sh
 
       - name: Bump version
-        run: ./scriptsCI/bump_version.sh patch
+        run: ./scripts/bump_version.sh patch
 
       - name: Show version
         run: |

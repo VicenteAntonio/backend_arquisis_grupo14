@@ -3,6 +3,7 @@
 const Router = require('koa-router');
 const router = new Router();
 const axios = require('axios');
+const { verifyToken, isAdmin } = require('../../utils/authorization');
 
 // Obtener el listado de todos los usuarios
 router.get('/', async (ctx) => {
@@ -18,7 +19,7 @@ router.get('/', async (ctx) => {
 });
 
 // Obtener un usuario y actualizar su saldo basado en las apuestas ganadas
-router.get('/:user_token', async (ctx) => {
+router.get('/:user_token', verifyToken, isAdmin, async (ctx) => {
   console.log("AAAAAA user_token", ctx);
   try {
     const { user_token } = ctx.params;
@@ -27,7 +28,7 @@ router.get('/:user_token', async (ctx) => {
     let user;
     try {
       user = await ctx.orm.User.findOne({ where: { user_token } }); /// +LOG
-      console.log("user", user); /// +LOG
+      console.log("--user", user); /// +LOG
     } catch (error) {
       console.error('Error buscando al usuario:', error); // Log para la depuración
       ctx.body = { error: 'Error buscando al usuario' };

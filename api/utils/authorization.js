@@ -1,32 +1,15 @@
 /* eslint-disable prefer-destructuring */
 const dotenv = require('dotenv');
-const { jwtDecode } = require('jwt-decode');
+// const { jwtDecode } = require('jwt-decode');
 const jwt = require('jsonwebtoken');
-const winston = require('winston');
 
 dotenv.config();
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'combined.log' })
-  ]
-});
 
-async function isAdmin(ctx, next) {
-  console.log("-----isAdmin-----", ctx);
-  await next();
-  let token = null;
-  if (ctx.request.header.authorization) {
-    token = ctx.request.header.authorization.split(' ')[1];
-  }
-  console.log('Token:', token);
-  if (!token || token === 'null') {
-    ctx.throw(401, 'Token not found');
-  }
+function isAdmin(ctx) { //next
+  const token = ctx.request.header.authorization.split(' ')[1];
   const decodedToken = jwt.decode(token);
   const roles = decodedToken['user/roles'] || [];
+  console.log('Roles del usuario:', roles);
   ctx.assert(roles.includes('admin'), 403, 'You are not an admin');
 }
 
@@ -42,22 +25,25 @@ function generateToken(user) {
   };
 
   const secret = process.env.JWT_SECRET;
-
+  console.log("Generando token", { payload, secret, options });
   return jwt.sign(payload, secret, options);
 }
 
 async function verifyToken(ctx, next) {
+  console.log("probando el verify token", ctx);
+  // console.log(ctx)
   try {
     const token = ctx.request.header.authorization.split(' ')[1];
     if (!token) {
       ctx.throw(401, 'Token not found');
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+    console.log("-----token.....", decoded);
     // Verifica si el token está cerca de expirar (por ejemplo, menos de 1 día)
     const currentTime = Math.floor(Date.now() / 1000);
     const timeLeft = decoded.exp - currentTime;
     const oneDayInSeconds = 24 * 60 * 60;
+    console.log("Tiempo para que expire el token:", timeLeft," segundos");
 
     if (timeLeft < oneDayInSeconds) {
       // Genera un nuevo token con más tiempo de duración
@@ -65,7 +51,7 @@ async function verifyToken(ctx, next) {
       ctx.set('Authorization', `Bearer ${newToken}`);
     }
 
-    logger.info("-----token.....", { exp: decoded.exp });
+    console.log("-----token------", { exp: decoded.exp });
     ctx.state.user = decoded;
     await next();
   } catch (error) {
@@ -73,4 +59,4 @@ async function verifyToken(ctx, next) {
   }
 }
 
-module.exports = { isAdmin, verifyToken };
+module.exports = { isAdmin, generateToken, verifyToken };

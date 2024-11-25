@@ -175,7 +175,7 @@ router.get('/:user_token', verifyToken, isAdmin, async (ctx) => {
 });
 
 // Crear un nuevo usuario
-router.post('/', async (ctx) => {
+router.post('/',verifyToken, async (ctx) => {
   try {
     const newUser = await ctx.orm.User.create(ctx.request.body);
     ctx.body = newUser;
@@ -187,7 +187,7 @@ router.post('/', async (ctx) => {
 });
 
 // Verificar y actualizar el wallet de un usuario
-router.patch('/:user_token', async (ctx) => {
+router.patch('/:user_token', verifyToken, async (ctx) => {
   try {
     const user = await ctx.orm.User.findOne({
       where: { user_token: ctx.params.user_token },
@@ -231,7 +231,7 @@ router.patch('/:user_token', async (ctx) => {
 });
 
 // Borrar un usuario
-router.delete('/:user_token', async (ctx) => {
+router.delete('/:user_token', verifyToken, async (ctx) => {
   try {
     const user = await ctx.orm.User.findOne({
       where: { user_token: ctx.params.user_token },

@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const moment = require('moment-timezone');
 const { Op } = require('sequelize');
+const { isAdmin, verifyToken } = require('../../utils/authorization');
 const axios = require('axios');
 
 const router = new Router();
@@ -68,7 +69,7 @@ router.post('/fixtures.create', '/', async (ctx) => {
 // Ejemplo: {url}/fixtures?home=Leicester&away=Bournemouth&date=2024-10-5
 // Ejemplo: {url}/fixtures?page=2&count=25
 
-router.get('fixtures.list', '/', async (ctx) => {
+router.get('fixtures.list', '/', verifyToken, async (ctx) => {
   try {
     const page = parseInt(ctx.query.page) || 1;
     const count = parseInt(ctx.query.count) || 25;
@@ -124,7 +125,7 @@ router.get('fixtures.list', '/', async (ctx) => {
     ctx.status = 500;
   }
 });
-router.get('fixtures.findbyids', '/byids', async (ctx) => {
+router.get('fixtures.findbyids', '/byids', verifyToken, async (ctx) => {
   try {
     // Obtener los IDs de la cadena de consulta
     const fixtureIds = ctx.query.ids.split(',').map(Number); // Convierte a números para evitar problemas con tipos
@@ -165,7 +166,7 @@ router.get('fixtures.findbyids', '/byids', async (ctx) => {
 // Endpoint para encontrar partidos según la id de llegada a la base de datos
 // Ejemplo: {url}/fixtures/1
 
-router.get('fixtures.find', '/:id', async (ctx) => {
+router.get('fixtures.find', '/:id', verifyToken,  async (ctx) => {
   try {
     const fixture = await ctx.orm.Fixture.findOne({
       where: { fixtureId: ctx.params.id }, // Cambia 'fixtureId' si tu atributo tiene otro nombre
@@ -186,7 +187,7 @@ router.get('fixtures.find', '/:id', async (ctx) => {
 // Endpoint para encontrar un partido según su fixtureId
 // Ejemplo: {url}/fixtures/fixture/1
 
-router.get('fixtures.find', '/fixture/:fixtureId', async (ctx) => {
+router.get('fixtures.find', '/fixture/:fixtureId', verifyToken, async (ctx) => {
   try {
     const fixture = await ctx.orm.Fixture.findOne({
       where: { fixtureId: ctx.params.fixtureId },
@@ -204,7 +205,7 @@ router.get('fixtures.find', '/fixture/:fixtureId', async (ctx) => {
   }
 });
 
-router.patch('fixtures.update', '/:fixture_id', async (ctx) => {
+router.patch('fixtures.update', '/:fixture_id', verifyToken, async (ctx) => {
   try {
     const fixture = await ctx.orm.Fixture.findOne({
       where: { fixtureId: ctx.params.fixture_id },
@@ -223,7 +224,7 @@ router.patch('fixtures.update', '/:fixture_id', async (ctx) => {
   }
 });
 
-router.put('fixtures.updateHistory', '/history', async (ctx) => {
+router.put('fixtures.updateHistory', '/history', verifyToken, async (ctx) => {
   try {
     if (!ctx.request.body || !ctx.request.body.fixtures) {
       ctx.status = 400;
@@ -316,7 +317,7 @@ router.put('fixtures.updateHistory', '/history', async (ctx) => {
 });
 
 // Si se actualiza algún resultado, se ve si alguno de los id
-router.delete('/fixtures.deleteAll', '/', async (ctx) => {
+router.delete('/fixtures.deleteAll', '/', verifyToken, async (ctx) => {
   try {
     const deletedFixtures = await ctx.orm.Fixture.destroy({
       where: {},

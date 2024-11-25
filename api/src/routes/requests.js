@@ -2,6 +2,7 @@ const Router = require('koa-router');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const moment = require('moment-timezone');
+const { verifyToken } = require('../../utils/authorization');
 
 const router = new Router();
 
@@ -38,7 +39,7 @@ async function getLocationFromIP(ip, user_token) {
   }
 }
 
-router.post('requests.create', '/', async (ctx) => {
+router.post('requests.create', '/',verifyToken, async (ctx) => {
   try {
     console.log('En post de create de la API');
 
@@ -199,7 +200,7 @@ async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   }
 }
 
-router.patch('requests.update', '/:request_id', async (ctx) => {
+router.patch('requests.update', '/:request_id', verifyToken, async (ctx) => {
   try {
     const request = await ctx.orm.Request.findOne({
       where: { request_id: ctx.params.request_id },
@@ -227,7 +228,7 @@ router.patch('requests.update', '/:request_id', async (ctx) => {
   }
 });
 
-router.get('requests.show', '/:request_id', async (ctx) => {
+router.get('requests.show', '/:request_id', verifyToken, async (ctx) => {
   try {
     const request = await ctx.orm.Request.findOne({
       where: { request_id: ctx.params.request_id },
@@ -248,7 +249,7 @@ router.get('requests.show', '/:request_id', async (ctx) => {
   }
 });
 
-router.get('requests.list', '/', async (ctx) => {
+router.get('requests.list', '/', verifyToken, async (ctx) => {
   console.log("EEEEEEE", ctx)
   try {
     const { user_token } = ctx.query; // llega bien
@@ -269,7 +270,7 @@ router.get('requests.list', '/', async (ctx) => {
   }
 });
 
-router.get('requests.all', '/list_all', async (ctx) => {
+router.get('requests.all', '/list_all',verifyToken, async (ctx) => {
   try {
     const requests = await ctx.orm.Request.findAll({});
     ctx.body = requests;

@@ -3,7 +3,7 @@
 const Router = require('koa-router');
 const router = new Router();
 const axios = require('axios');
-const { verifyToken, isAdmin } = require('../../utils/authorization');
+const { verifyToken, isAdmin, generateToken } = require('../../utils/authorization');
 
 // Obtener el listado de todos los usuarios
 router.get('/', async (ctx) => {
@@ -178,7 +178,9 @@ router.get('/:user_token', verifyToken, isAdmin, async (ctx) => {
 router.post('/',verifyToken, async (ctx) => {
   try {
     const newUser = await ctx.orm.User.create(ctx.request.body);
-    ctx.body = newUser;
+    const token = generateToken({ user_token: newUser.user_token });
+    console.log("Token generado correctamente", token);
+    ctx.body = { user: newUser, token };
     ctx.status = 201; // Created
   } catch (error) {
     ctx.body = { error: error.message };

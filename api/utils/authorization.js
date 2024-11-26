@@ -1,6 +1,7 @@
 /* eslint-disable prefer-destructuring */
 const dotenv = require('dotenv');
 const { jwtDecode } = require('jwt-decode');
+const { User } = require('../src/models');
 
 dotenv.config();
 
@@ -14,9 +15,18 @@ async function isAdmin(ctx, next) {
   if (!token || token === 'null') {
     ctx.throw(401, 'Token not found');
   }
-  const decodedToken = jwtDecode(token);
-  const roles = decodedToken['user/roles'] || [];
-  ctx.assert(roles.includes('admin'), 403, 'You are not a admin');
+  // const decodedToken = jwtDecode(token);
+  // const roles = decodedToken['user/roles'] || [];
+  // ctx.assert(roles.includes('admin'), 403, 'You are not a admin');
+
+  // Consultar la base de datos para verificar si el usuario es admin
+  const user = await User.findOne({ where: { user_token: token } });
+  if (!user) {
+    ctx.throw(404, 'User not found');
+  }
+  if (!user.admin) {
+    ctx.throw(403, 'You are not an admin');
+  }
 }
 
 async function verifyToken(ctx, next) {

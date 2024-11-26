@@ -2,6 +2,8 @@ const Router = require('koa-router');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const moment = require('moment-timezone');
+const user = require('../models/user');
+const { QueryTypes } = require('sequelize');
 
 const router = new Router();
 
@@ -212,6 +214,49 @@ router.patch('requests.update', '/:request_id', async (ctx) => {
   }
 });
 
+router.get('requests.fixtures', '/fixtures/:user_token', async (ctx) => {
+  try {
+    console.log("HOLAAAA")
+    const user_token  = ctx.params.user_token;
+    console.log('se buscará el user_token', user_token);
+    if (user_token) {
+      console.log('se encontró el user_token');
+      const requests = await ctx.orm.Request.findAll({
+        where: { user_token, status: 'accepted' },
+      });
+      console.log(requests);
+
+      if (requests.length === 0) {
+        ctx.body = { error: 'No requests found for this user_token' };
+        ctx.status = 404;
+        return;
+      }
+
+      // Obtener los fixture_ids de las requests
+      const fixtureIds = requests.map(request => request.fixture_id);
+      console.log('los fixture_ids son', fixtureIds);
+
+      // Buscar los fixtures asociados a los fixture_ids
+      const fixtures = await ctx.orm.sequelize.query(
+        `SELECT * FROM "Fixtures" WHERE "fixtureId" IN (:fixtureIds)`,
+        {
+          replacements: { fixtureIds },
+          type: QueryTypes.SELECT
+        }
+      );
+
+      ctx.body = { requests, fixtures };
+      ctx.status = 200;
+    } else {
+      ctx.status = 400;
+      ctx.body = { error: 'Invalid user_token' };
+    }
+  } catch (error) {
+    ctx.body = { error: error.message };
+    ctx.status = 500;
+  }
+});
+
 router.get('requests.show', '/:request_id', async (ctx) => {
   try {
     const request = await ctx.orm.Request.findOne({
@@ -262,5 +307,6 @@ router.get('requests.all', '/list_all', async (ctx) => {
     ctx.status = 500;
   }
 });
+
 
 module.exports = router;

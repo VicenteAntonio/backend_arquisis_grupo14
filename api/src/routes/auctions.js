@@ -27,7 +27,7 @@ router.post('auctions.create', '/', verifyToken, async (ctx) => {
   }
 });
 
-router.post('auctions.submit', '/submit', verifyToken, isAdmin, async (ctx) => {
+router.post('auctions.submit', '/submit', verifyToken, async (ctx) => {
   try {
     console.log(ctx.request.body);
     const auctionData = ctx.request.body;
@@ -48,7 +48,7 @@ router.post('auctions.submit', '/submit', verifyToken, isAdmin, async (ctx) => {
 });
 
 // Subastas de otros grupos
-router.get('auctions.listOthers', '/others', verifyToken, isAdmin, async (ctx) => {
+router.get('auctions.listOthers', '/others', verifyToken, async (ctx) => {
   try {
     const auctions = await ctx.orm.Auction.findAll();
     const auctionsFiltered = auctions.filter((auction) => auction.groupId !== 14);
@@ -60,7 +60,7 @@ router.get('auctions.listOthers', '/others', verifyToken, isAdmin, async (ctx) =
   }
 });
 
-router.get('auctions.listAdmin', '/',verifyToken, isAdmin, async (ctx) => {
+router.get('auctions.listAdmin', '/',verifyToken, async (ctx) => {
   try {
     const auctions = await ctx.orm.Auction.findAll({
       where: { groupId: 14 },
@@ -73,7 +73,7 @@ router.get('auctions.listAdmin', '/',verifyToken, isAdmin, async (ctx) => {
   }
 });
 
-router.get('auctions.show', '/:auctionId', verifyToken, isAdmin, async (ctx) => {
+router.get('auctions.show', '/:auctionId', verifyToken, async (ctx) => {
   try {
     const auction = await ctx.orm.Auction.findOne({
       where: { auctionId: ctx.params.auctionId },

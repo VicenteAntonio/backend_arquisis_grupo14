@@ -3,7 +3,7 @@
 const Router = require('koa-router');
 const router = new Router();
 const axios = require('axios');
-const { verifyToken, isAdmin, generateToken } = require('../../utils/authorization');
+const { verifyToken, isAdmin } = require('../../utils/authorization');
 
 // Obtener el listado de todos los usuarios
 router.get('/', async (ctx) => {
@@ -19,7 +19,7 @@ router.get('/', async (ctx) => {
 });
 
 // Obtener un usuario y actualizar su saldo basado en las apuestas ganadas
-router.get('/:user_token', verifyToken, isAdmin, async (ctx) => {
+router.get('/:user_token', verifyToken , async (ctx) => {
   console.log("AAAAAA user_token", ctx);
   try {
     const { user_token } = ctx.params;
@@ -175,14 +175,18 @@ router.get('/:user_token', verifyToken, isAdmin, async (ctx) => {
 });
 
 // Crear un nuevo usuario
-router.post('/',verifyToken, async (ctx) => {
+router.post('/', async (ctx) => {
   try {
+    console.log("Creando un nuevo usuario");
+    console.log("Body", ctx.request.body);
     const newUser = await ctx.orm.User.create(ctx.request.body);
-    const token = generateToken({ user_token: newUser.user_token });
-    console.log("Token generado correctamente", token);
-    ctx.body = { user: newUser, token };
+    // console.log("Usuario creado correctamente", newUser);
+    // const token = generateToken(newUser);
+    console.log("Token generado correctamente");
+    ctx.body = { user: newUser };
     ctx.status = 201; // Created
   } catch (error) {
+    console.error('Error creando el usuario:', error);
     ctx.body = { error: error.message };
     ctx.status = 400; // Bad Request
   }

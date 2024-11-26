@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const moment = require('moment-timezone');
 const { where } = require('sequelize');
-const { isAdmin, verifyToken } = require('../../utils/authorization');
+const { verifyToken } = require('../../utils/authorization');
 
 const router = new Router();
 
@@ -65,7 +65,7 @@ router.post('proposals.create', '/', verifyToken, async (ctx) => {
   }
 });
 
-router.post('proposals.submit', '/submit',verifyToken, isAdmin, async (ctx) => {
+router.post('proposals.submit', '/submit',verifyToken, async (ctx) => {
   try {
     const proposalData = ctx.request.body;
     const proposal = {
@@ -82,7 +82,7 @@ router.post('proposals.submit', '/submit',verifyToken, isAdmin, async (ctx) => {
   }
 });
 
-router.get('proposals.list', '/', verifyToken, isAdmin, async (ctx) => {
+router.get('proposals.list', '/', verifyToken, async (ctx) => {
   try {
     const proposals = await ctx.orm.Proposal.findAll();
     ctx.body = proposals;
@@ -93,7 +93,7 @@ router.get('proposals.list', '/', verifyToken, isAdmin, async (ctx) => {
   }
 });
 
-router.get('proposals.show', '/:proposalId',verifyToken, isAdmin, async (ctx) => {
+router.get('proposals.show', '/:proposalId',verifyToken, async (ctx) => {
   try {
     const proposal = await ctx.orm.Proposal.findOne({
       where: { proposalId: ctx.params.proposalId },
@@ -111,7 +111,7 @@ router.get('proposals.show', '/:proposalId',verifyToken, isAdmin, async (ctx) =>
   }
 });
 
-router.get('proposals.listByAuction', '/auction/:auctionId',verifyToken, isAdmin, async (ctx) => {
+router.get('proposals.listByAuction', '/auction/:auctionId',verifyToken, async (ctx) => {
   try {
     const proposals = await ctx.orm.Proposal.findAll({
       where: { auctionId: ctx.params.auctionId },
@@ -124,7 +124,7 @@ router.get('proposals.listByAuction', '/auction/:auctionId',verifyToken, isAdmin
   }
 });
 
-router.post('proposals.submitResponse', '/submitResponse', verifyToken, isAdmin, async (ctx) => {
+router.post('proposals.submitResponse', '/submitResponse', verifyToken, async (ctx) => {
   try {
     const response = ctx.request.body;
     await axios.post(process.env.AUCTION_PROPOSAL_URL, response);

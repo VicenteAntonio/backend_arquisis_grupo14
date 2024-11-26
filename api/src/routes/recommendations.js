@@ -4,7 +4,7 @@ const { verifyToken, isAdmin } = require('../../utils/authorization');
 
 const router = new Router();
 
-router.post('recommendations.create', '/', verifyToken, isAdmin, async (ctx) => {
+router.post('recommendations.create', '/', verifyToken, async (ctx) => {
   try {
     console.log(ctx.request.body);
     const recommendation = await ctx.orm.Recommendation.create(ctx.request.body);

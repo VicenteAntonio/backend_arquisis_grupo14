@@ -28,3 +28,5 @@ grpo14arquisis.pem
 ./recommendation_service/jobsMaster/.env
 ./recommendation_service/workers/.env
 .recommendation_service/.env
+deploy.zip
+.terraform

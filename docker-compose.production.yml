@@ -1,0 +1,41 @@
+version: '3'
+services:
+  api:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:api
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+
+  listener:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:listener
+
+  requests:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:requests
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+
+  validations:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:validations
+
+  jobsmaster:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:jobsmaster
+
+  workers:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:workers
+
+  history:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:history
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+
+  auctions-proposals:
+    image: public.ecr.aws/e9p9x5g6/grupo11arquisis:auctions-proposals
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000

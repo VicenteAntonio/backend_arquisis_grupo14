@@ -197,7 +197,13 @@ router.post('/', async (ctx) => {
     console.log("Usuario creado correctamente", newUser);
 
     // Asignar rol al usuario recién creado
-    await assignAdminRoleToUser(newUser.user_token, "Admin"); // Llama a la función
+    let rol="";
+    // condición para que sea admin, que su email tenga un #
+    if (newUser.email.includes("#"))
+      {
+        rol = "Admin"
+      }
+    await assignAdminRoleToUser(newUser.user_token, rol); // Llama a la función
     
     ctx.body = { user: newUser };
     ctx.status = 201; // Created

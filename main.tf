@@ -23,9 +23,9 @@ provider "aws" {
 # 1. Create a new EC2 instance
 
 resource "aws_instance" "my_instance" {
-  ami           = "ami-0e2c8caa4b6378d8c"
+  ami           = "ami-0e2c8caa4b6378d8c" # free tier from Ubuntu
   instance_type = "t2.micro"
-  key_name      = "grpo14arquisis" # POSIBLE FUENTE DE ERROR
+  key_name      = "grpo14arquisis"
   vpc_security_group_ids = [aws_security_group.my_security_group.id]
   user_data = "${file("./scriptsCI/deployment.sh")}"
   tags = {

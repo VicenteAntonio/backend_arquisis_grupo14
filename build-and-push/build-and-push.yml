@@ -1,0 +1,145 @@
+# name: Build and Push to ECR
+
+
+# on:
+#   push:
+#     branches:
+#       - main
+#       - master
+#       - devops
+
+
+# permissions:
+#   id-token: write  # This is required for requesting the JWT
+#   contents: read  # This is required for actions/checkout
+
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+
+#     env:
+#       AWS_DEFAULT_REGION: us-east-1  # Default region for ECR
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+      
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID0 }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY0 }}
+#           aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+#       - name: Login to Amazon ECR
+#         id: login-ecr-public
+#         uses: aws-actions/amazon-ecr-login@v2
+#         with:
+#           registry-type: public
+#           mask-password: "true"
+
+#       - name: Build, tag, and push docker image to Amazon ECR Public (API)
+#         env:
+#           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+#           REGISTRY_ALIAS: e9p9x5g6
+#           REPOSITORY: grupo11arquisis
+#           IMAGE_TAG: api
+#         run: |
+#           cd api
+#           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+#           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
+#       - name: Build, tag, and push docker image to Amazon ECR Public (Listener)
+#         env:
+#           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+#           REGISTRY_ALIAS: e9p9x5g6
+#           REPOSITORY: grupo11arquisis
+#           IMAGE_TAG: listener
+#         run: |
+#           cd listener
+#           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+#           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
+#       - name: Build, tag, and push docker image to Amazon ECR Public (Requests)
+#         env:
+#           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+#           REGISTRY_ALIAS: e9p9x5g6
+#           REPOSITORY: grupo11arquisis
+#           IMAGE_TAG: requests
+#         run: |
+#           cd requests
+#           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+#           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
+#       - name: Build, tag, and push docker image to Amazon ECR Public (Validations)
+#         env:
+#           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+#           REGISTRY_ALIAS: e9p9x5g6
+#           REPOSITORY: grupo11arquisis
+#           IMAGE_TAG: validations
+#         run: |
+#           cd validations
+#           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+#           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
+#       - name: Build, tag, and push docker image to Amazon ECR Public (JobsMaster)
+#         env:
+#           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+#           REGISTRY_ALIAS: e9p9x5g6
+#           REPOSITORY: grupo11arquisis
+#           IMAGE_TAG: jobsmaster
+#         run: |
+#           cd recommendation-service/jobsmaster
+#           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+#           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
+#       - name: Build, tag, and push docker image to Amazon ECR Public (workers)
+#         env:
+#           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+#           REGISTRY_ALIAS: e9p9x5g6
+#           REPOSITORY: grupo11arquisis
+#           IMAGE_TAG: workers
+#         run: |
+#           cd recommendation-service/workers
+#           docker build --platform linux/amd64 -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+#           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+
+#   deploy-to-ec2:
+#     runs-on: ubuntu-latest
+#     if: ${{ always() }}
+#     needs: [build-and-push]
+
+#     env:
+#       AWS_DEFAULT_REGION: us-east-2  # Default region for CodeDeploy
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+      
+#       - name: Configure AWS Credentials for us-east-2
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID0 }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY0 }}
+#           aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+#       - name: Zip artifact to deploy
+#         run: |
+#           zip -r deploy.zip scripts/ appspec.yml docker-compose.production.yml
+
+#       - name: Copy Zip to S3
+#         run: |
+#           aws s3 cp deploy.zip s3://deploy-backend/deploy.zip --region ${{ env.AWS_DEFAULT_REGION }}
+
+#       - name: Create CodeDeploy Deployment
+#         id: create-deployment-trigger
+#         run: |
+#           deploymentId=$(aws deploy create-deployment --application-name \
+#           Backend-proyecto --deployment-group-name deploy-backend --region ${{ env.AWS_DEFAULT_REGION }} \
+#           --s3-location bucket=deploy-backend,key=deploy.zip,bundleType=zip \
+#           --description "Automatic deployment from githubactions commit ${{ github.sha }}" | jq -r '.deploymentId')
+#           echo "DeploymentId=$deploymentId" >> $GITHUB_OUTPUT
+    
+#       - name: Wait for deployment to finish
+#         run: |
+#           aws deploy wait deployment-successful --deployment-id ${{ steps.create-deployment-trigger.outputs.deploymentId }} --region ${{ env.AWS_DEFAULT_REGION }}

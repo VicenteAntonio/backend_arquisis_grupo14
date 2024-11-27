@@ -4,6 +4,7 @@ const Router = require('koa-router');
 const router = new Router();
 const axios = require('axios');
 const { verifyToken, isAdmin } = require('../../utils/authorization');
+const { assignAdminRoleToUser } = require('../../utils/assignRole'); // Importa la función
 
 // Obtener el listado de todos los usuarios
 router.get('/', async (ctx) => {
@@ -28,7 +29,7 @@ router.get('/:user_token', verifyToken , async (ctx) => {
     let user;
     try {
       user = await ctx.orm.User.findOne({ where: { user_token } }); /// +LOG
-      console.log("--user", user); /// +LOG
+
     } catch (error) {
       console.error('Error buscando al usuario:', error); // Log para la depuración
       ctx.body = { error: 'Error buscando al usuario' };
@@ -51,7 +52,6 @@ router.get('/:user_token', verifyToken , async (ctx) => {
         },
         params: { user_token: user_token }, // Cambié depositToken por user_token
       }); // +LOG
-      console.log("requestsResponse", requestsResponse); /// +LOG
     } catch (error) {
       console.error('Error obteniendo las solicitudes aaaaa:', error); // Log para la depuración
       ctx.body = { error: 'Error obteniendo las solicitudes' };
@@ -194,9 +194,11 @@ router.post('/', async (ctx) => {
     console.log("Creando un nuevo usuario");
     console.log("Body", ctx.request.body);
     const newUser = await ctx.orm.User.create(ctx.request.body);
-    // console.log("Usuario creado correctamente", newUser);
-    // const token = generateToken(newUser);
-    console.log("Token generado correctamente");
+    console.log("Usuario creado correctamente", newUser);
+
+    // Asignar rol al usuario recién creado
+    await assignAdminRoleToUser(newUser.user_token, "Admin"); // Llama a la función
+    
     ctx.body = { user: newUser };
     ctx.status = 201; // Created
   } catch (error) {
@@ -270,5 +272,6 @@ router.delete('/:user_token', verifyToken, async (ctx) => {
     ctx.status = 500; // Internal Server Error
   }
 });
+
 
 module.exports = router;

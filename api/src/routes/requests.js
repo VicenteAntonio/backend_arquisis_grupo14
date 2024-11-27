@@ -263,7 +263,6 @@ router.get('requests.list', '/', verifyToken, async (ctx) => {
       ctx.body = { error: 'Invalid username' };
     }
   } catch (error) {
-    console.log("AAAA OCURRIDO UN ERROR")
     ctx.body = { error: error.message };
     ctx.status = 500;
   }

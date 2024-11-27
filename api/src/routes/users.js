@@ -22,8 +22,8 @@ router.get('/', async (ctx) => {
 router.get('/:user_token', verifyToken , async (ctx) => {
   console.log("AAAAAA user_token", ctx);
   try {
-    const { user_token } = ctx.params;
-
+    const { user_token } = ctx.params // Obtener el token del header
+    const token = ctx.request.header.authorization.split(' ')[1];
     // Buscar al usuario por su token
     let user;
     try {
@@ -46,6 +46,9 @@ router.get('/:user_token', verifyToken , async (ctx) => {
     let requestsResponse;
     try {
       requestsResponse = await axios.get(`${process.env.API_URL}/requests`, {
+        headers:{
+          Authorization: `Bearer ${token}`,
+        },
         params: { user_token: user_token }, // Cambié depositToken por user_token
       }); // +LOG
       console.log("requestsResponse", requestsResponse); /// +LOG
@@ -132,7 +135,13 @@ router.get('/:user_token', verifyToken , async (ctx) => {
             `${process.env.API_URL}/requests/${request.request_id}`,
             {
               reviewed: true, // Actualizar el estado de la solicitud
-            } // +LOG
+            }, // +LOG
+            {
+              headers:
+              {
+                Authorization: `Bearer ${token}`,
+              }
+            }
           );
           console.log('se actualizó la request');
         } catch (error) {
@@ -152,6 +161,11 @@ router.get('/:user_token', verifyToken , async (ctx) => {
       try {
         await axios.patch(`${process.env.API_URL}/users/${user_token}`, {
           amount: totalAmountToAdd, // Monto a añadir
+        }, {
+          headers:
+          {
+            Authorization: `Bearer ${token}`,
+          }
         }); // +LOG
         console.log('se actualizó el saldo del usuario'); /// +LOG
       } catch (error) {

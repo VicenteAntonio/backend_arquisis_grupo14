@@ -250,7 +250,6 @@ router.get('requests.show', '/:request_id', verifyToken, async (ctx) => {
 });
 
 router.get('requests.list', '/', verifyToken, async (ctx) => {
-  console.log("EEEEEEE", ctx)
   try {
     const { user_token } = ctx.query; // llega bien
     if (user_token) {

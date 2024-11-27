@@ -6,7 +6,7 @@ dotenv.config();
 const JWKS = createRemoteJWKSet(new URL('https://dev-ldmj4nnfbyehlbs5.us.auth0.com/.well-known/jwks.json'));
 
 async function verifyToken(ctx, next) {
-  console.log("Verificando token", ctx.request.header.authorization);
+  console.log("Verificando token", ctx.request);
   try {
     const authHeader = ctx.request.header.authorization;
     if (!authHeader) {

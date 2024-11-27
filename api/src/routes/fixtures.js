@@ -1,7 +1,7 @@
 const Router = require('koa-router');
 const moment = require('moment-timezone');
 const { Op } = require('sequelize');
-const { isAdmin, verifyToken } = require('../../utils/authorization');
+// const { isAdmin, verifyToken } = require('../../utils/authorization');
 const axios = require('axios');
 
 const router = new Router();
@@ -120,6 +120,7 @@ router.get('fixtures.list', '/', async (ctx) => {
       fixtures: fixtures.rows,
     };
     ctx.status = 200;
+    console.log("fixtures", fixtures);
   } catch (error) {
     ctx.body = { error: error.message };
     ctx.status = 500;

@@ -25,6 +25,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx:/etc/nginx/conf.d
+    networks:
+      - app-network
     ports:
       - 80:80
     depends_on: 

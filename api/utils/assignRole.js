@@ -14,6 +14,43 @@ const roles = {
 };
 // const USER_EMAIL = 'admin@uc.cl';
 
+let token = {
+    access_token: config.access_token,
+    expires_in: 86400,
+    token_type: "Bearer",
+    obtained_at: Date.now()
+};
+
+function isTokenExpired() {
+    const currentTime = Date.now();
+    const tokenExpiryTime = token.obtained_at + (token.expires_in * 1000);
+    return currentTime > tokenExpiryTime;
+}
+
+async function getNewToken() {
+    try {
+        const response = await axios.post(`https://${DOMAIN}/oauth/token`, {
+            grant_type: 'client_credentials',
+            client_id: 'lUarIPDg1RzL9GGchjSQkk8VVlFJNTe3',
+            client_secret: 'Ei4Up4g7ntA2feIjqUB-72CfSdOboC5kozFjJD-t_5ZNeH3EiS1AS22ggOU9uvPP',
+            audience: `https://${DOMAIN}/api/v2/`
+        });
+        token.access_token = response.data.access_token;
+        token.expires_in = response.data.expires_in;
+        token.obtained_at = Date.now();
+    } catch (error) {
+        console.error('Error obtaining new token:', error);
+    }
+}
+
+async function makeAuthenticatedRequest() {
+    if (isTokenExpired()) {
+        await getNewToken();
+    }
+}
+
+makeAuthenticatedRequest();
+
 const assignRole = async (user_token, role) => {
     console.log("user_token es",user_token);
     console.log("role es",role);

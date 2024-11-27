@@ -37,6 +37,7 @@ async function verifyToken(ctx, next) {
 }
 
 function isAdmin(ctx, next) {
+  console.log("Verificando si el usuario es admin");
   const token = ctx.request.header.authorization.split(' ')[1];
   jwtVerify(token, JWKS, {
     algorithms: ['RS256'],
@@ -44,6 +45,8 @@ function isAdmin(ctx, next) {
     audience: ['https://dev-ldmj4nnfbyehlbs5.us.auth0.com/api/v2',"https://dev-ldmj4nnfbyehlbs5.us.auth0.com/userinfo"],
   }).then(({ payload }) => {
     const roles = payload.roles || [];
+    const admin = ctx.state.user;
+    console.log("Usuario:", admin);
     console.log("Roles del usuario:", roles);
     if (!roles.includes('admin')) {
       ctx.throw(403, 'You are not an admin');

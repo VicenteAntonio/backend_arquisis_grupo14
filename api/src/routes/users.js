@@ -207,7 +207,7 @@ router.post('/', async (ctx) => {
 });
 
 // Verificar y actualizar el wallet de un usuario
-router.patch('/:user_token', verifyToken, async (ctx) => {
+router.patch('/:user_token', verifyToken, isAdmin, async (ctx) => {
   try {
     const user = await ctx.orm.User.findOne({
       where: { user_token: ctx.params.user_token },

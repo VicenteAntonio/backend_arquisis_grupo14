@@ -150,7 +150,6 @@ DB_USERNAME = <db_username>
 DB_PASSWORD = <db_password>
 DB_NAME = <db_name>
 DB_HOST = localhost
-GEOCODE_API_KEY = <geocode_api_key>
 ```
 
 #### Ejecución

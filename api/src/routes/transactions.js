@@ -1,7 +1,7 @@
 const Router = require('koa-router');
 const tx = require('../../utils/trx');
 const axios = require('axios'); 
-const transporter = require('../config/mailer')
+const transporter = require('../config/mailer');
 
 //const trxRouter = new Router();
 const router = new Router();
@@ -98,8 +98,8 @@ async function sendValidationToBroker(request_id, group_id, seller, valid) {
 
 // Actualizar la transacción según los resultados
 router.post('/commit', async (ctx) => {
-  const  group_id = '14'
-  const seller =0
+  const  group_id = '14';
+  const seller = 0;
   const { ws_token, request_id, mail} = ctx.request.body;
   console.log('Received in commit:', { ws_token, request_id, group_id, seller, mail });
 

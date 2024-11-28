@@ -6,6 +6,7 @@ validations/node_modules
 history/node_modules
 recommendation_service/jobsMaster/node_modules
 recommendation_service/workers/node_modules
+auctions_proposals/node_modules
 /node_modules
 node_modules
 **/node_modules/

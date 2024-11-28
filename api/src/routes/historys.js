@@ -1,7 +1,8 @@
 const Router = require('koa-router');
 const router = new Router();
+const { isAdmin, verifyToken } = require('../../utils/authorization');
 
-router.post('/', async (ctx) => {
+router.post('/', verifyToken, async (ctx) => {
   try {
     await Promise.all(ctx.request.body.history.map(async (receivedHistory) => {
       

@@ -3,9 +3,12 @@
 const Router = require('koa-router');
 const router = new Router();
 const axios = require('axios');
+const { verifyToken, isAdmin } = require('../../utils/authorization');
+const { assignAdminRoleToUser } = require('../../utils/assignRole'); // Importa la función
 
 // Obtener el listado de todos los usuarios
 router.get('/', async (ctx) => {
+  console.log('se está intentando obtener los usuarios');
   try {
     const users = await ctx.orm.User.findAll();
     ctx.body = users;
@@ -17,14 +20,16 @@ router.get('/', async (ctx) => {
 });
 
 // Obtener un usuario y actualizar su saldo basado en las apuestas ganadas
-router.get('/:user_token', async (ctx) => {
+router.get('/:user_token', verifyToken , async (ctx) => {
+  console.log("AAAAAA user_token", ctx);
   try {
-    const { user_token } = ctx.params;
-
+    const { user_token } = ctx.params // Obtener el token del header
+    const token = ctx.request.header.authorization.split(' ')[1];
     // Buscar al usuario por su token
     let user;
     try {
-      user = await ctx.orm.User.findOne({ where: { user_token } });
+      user = await ctx.orm.User.findOne({ where: { user_token } }); /// +LOG
+
     } catch (error) {
       console.error('Error buscando al usuario:', error); // Log para la depuración
       ctx.body = { error: 'Error buscando al usuario' };
@@ -42,10 +47,13 @@ router.get('/:user_token', async (ctx) => {
     let requestsResponse;
     try {
       requestsResponse = await axios.get(`${process.env.API_URL}/requests`, {
+        headers:{
+          Authorization: `Bearer ${token}`,
+        },
         params: { user_token: user_token }, // Cambié depositToken por user_token
-      });
+      }); // +LOG
     } catch (error) {
-      console.error('Error obteniendo las solicitudes:', error); // Log para la depuración
+      console.error('Error obteniendo las solicitudes aaaaa:', error); // Log para la depuración
       ctx.body = { error: 'Error obteniendo las solicitudes' };
       ctx.status = 500; // Internal Server Error
       return;
@@ -80,7 +88,8 @@ router.get('/:user_token', async (ctx) => {
         {
           params: { ids: fixtureIds.join(',') }, // Envía los IDs como un string separado por comas
         }
-      );
+      ); // +LOG
+      console.log("fixturesResponse", fixturesResponse); /// +LOG
     } catch (error) {
       console.error('Error obteniendo los fixtures:', error); // Log para la depuración
       ctx.body = { error: 'Error obteniendo los fixtures' };
@@ -126,8 +135,15 @@ router.get('/:user_token', async (ctx) => {
             `${process.env.API_URL}/requests/${request.request_id}`,
             {
               reviewed: true, // Actualizar el estado de la solicitud
+            }, // +LOG
+            {
+              headers:
+              {
+                Authorization: `Bearer ${token}`,
+              }
             }
           );
+          console.log('se actualizó la request');
         } catch (error) {
           console.error(
             `Error actualizando la solicitud ${request.id}:`,
@@ -145,7 +161,13 @@ router.get('/:user_token', async (ctx) => {
       try {
         await axios.patch(`${process.env.API_URL}/users/${user_token}`, {
           amount: totalAmountToAdd, // Monto a añadir
-        });
+        }, {
+          headers:
+          {
+            Authorization: `Bearer ${token}`,
+          }
+        }); // +LOG
+        console.log('se actualizó el saldo del usuario'); /// +LOG
       } catch (error) {
         console.error(
           `Error actualizando el saldo del usuario ${user_token}:`,
@@ -169,17 +191,31 @@ router.get('/:user_token', async (ctx) => {
 // Crear un nuevo usuario
 router.post('/', async (ctx) => {
   try {
+    console.log("Creando un nuevo usuario");
+    console.log("Body", ctx.request.body);
     const newUser = await ctx.orm.User.create(ctx.request.body);
-    ctx.body = newUser;
+    console.log("Usuario creado correctamente", newUser);
+
+    // Asignar rol al usuario recién creado
+    let rol="";
+    // condición para que sea admin, que su email tenga un #
+    if (newUser.email.includes("#"))
+      {
+        rol = "Admin"
+      }
+    await assignAdminRoleToUser(newUser.user_token, rol); // Llama a la función
+    
+    ctx.body = { user: newUser };
     ctx.status = 201; // Created
   } catch (error) {
+    console.error('Error creando el usuario:', error);
     ctx.body = { error: error.message };
     ctx.status = 400; // Bad Request
   }
 });
 
 // Verificar y actualizar el wallet de un usuario
-router.patch('/:user_token', async (ctx) => {
+router.patch('/:user_token', verifyToken, isAdmin, async (ctx) => {
   try {
     const user = await ctx.orm.User.findOne({
       where: { user_token: ctx.params.user_token },
@@ -223,7 +259,7 @@ router.patch('/:user_token', async (ctx) => {
 });
 
 // Borrar un usuario
-router.delete('/:user_token', async (ctx) => {
+router.delete('/:user_token', verifyToken, async (ctx) => {
   try {
     const user = await ctx.orm.User.findOne({
       where: { user_token: ctx.params.user_token },
@@ -242,5 +278,6 @@ router.delete('/:user_token', async (ctx) => {
     ctx.status = 500; // Internal Server Error
   }
 });
+
 
 module.exports = router;

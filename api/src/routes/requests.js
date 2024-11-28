@@ -2,14 +2,20 @@ const Router = require('koa-router');
 const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const moment = require('moment-timezone');
+const { verifyToken } = require('../../utils/authorization');
 const user = require('../models/user');
 const { QueryTypes } = require('sequelize');
 
+
 const router = new Router();
 
-async function getUserIP() {
+async function getUserIP(user_token) {
   try {
-    const response = await axios.get('https://api.ipify.org?format=json');
+    const response = await axios.get('https://api.ipify.org?format=json', {
+      headers: {
+        'Authorization': `Bearer ${user_token}`
+      }
+    });
     const userIP = response.data.ip;
     return userIP;
   } catch (error) {
@@ -17,9 +23,14 @@ async function getUserIP() {
     return null;
   }
 }
-async function getLocationFromIP(ip) {
+
+async function getLocationFromIP(ip, user_token) {
   try {
-    const response = await axios.get(`http://ip-api.com/json/${ip}`);
+    const response = await axios.get(`http://ip-api.com/json/${ip}`, {
+      headers: {
+        'Authorization': `Bearer ${user_token}`
+      }
+    });
     const data = response.data;
     if (data.status === 'fail') {
       return 'Unknown'; // Devuelve "Unknown" si falla
@@ -31,7 +42,7 @@ async function getLocationFromIP(ip) {
   }
 }
 
-router.post('requests.create', '/', async (ctx) => {
+router.post('requests.create', '/', verifyToken, async (ctx) => {
   try {
     console.log('En post de create de la API');
 
@@ -45,8 +56,14 @@ router.post('requests.create', '/', async (ctx) => {
     // Agregar un log para ver qué valor está recibiendo como user_token
     console.log("Valor de user_token recibido:", `${user_token}`);
 
-    
-    
+    // Obtener la IP del usuario usando el user_token
+    const userIP = await getUserIP(user_token);
+    console.log('IP del usuario:', userIP);
+
+    // Obtener la ubicación del usuario desde la IP usando el user_token
+    const userLocation = await getLocationFromIP(userIP, user_token);
+    console.log('Ubicación del usuario:', userLocation);
+
     let user;
 
     if (user_token !== undefined) {
@@ -56,7 +73,7 @@ router.post('requests.create', '/', async (ctx) => {
           `${process.env.API_URL}/users/${user_token}`
         );
         user = userResponse.data;
-        // Aquí puedes manejar los datos del usuario
+
       } catch (error) {
         console.error('Error al obtener el usuario:', error);
         // Maneja el error aquí, por ejemplo, devolviendo una respuesta de error
@@ -126,12 +143,12 @@ router.post('requests.create', '/', async (ctx) => {
       all_data_request.request_id = uuidv4();
       console.log("Nuevo request_id generado:", all_data_request.request_id);
     }
-    const userIP = await getUserIP();
-    const location = await getLocationFromIP(userIP);
+    const location = await getLocationFromIP(userIP, user_token);
 
     all_data_request.location = location;
     all_data_request.datetime = moment.utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
     all_data_request.seller = 0;
+    // all_data_request.user_token = user_token;
 
     // Crear la request
     console.log('se creará la request pending en la base de datos');
@@ -186,7 +203,7 @@ async function findFixtureAndUpdatebonusQuantity(request, ctx) {
   }
 }
 
-router.patch('requests.update', '/:request_id', async (ctx) => {
+router.patch('requests.update', '/:request_id', verifyToken, async (ctx) => {
   try {
     const request = await ctx.orm.Request.findOne({
       where: { request_id: ctx.params.request_id },
@@ -213,6 +230,7 @@ router.patch('requests.update', '/:request_id', async (ctx) => {
     ctx.status = 400;
   }
 });
+
 
 router.get('requests.fixtures', '/fixtures/:user_token', async (ctx) => {
   try {
@@ -257,7 +275,7 @@ router.get('requests.fixtures', '/fixtures/:user_token', async (ctx) => {
   }
 });
 
-router.get('requests.show', '/:request_id', async (ctx) => {
+router.get('requests.show', '/:request_id', verifyToken, async (ctx) => {
   try {
     const request = await ctx.orm.Request.findOne({
       where: { request_id: ctx.params.request_id },
@@ -278,12 +296,12 @@ router.get('requests.show', '/:request_id', async (ctx) => {
   }
 });
 
-router.get('requests.list', '/', async (ctx) => {
+router.get('requests.list', '/', verifyToken, async (ctx) => {
   try {
-    const { user_token } = ctx.query;
+    const { user_token } = ctx.query; // llega bien
     if (user_token) {
       const requests = await ctx.orm.Request.findAll({
-        where: { user_token },
+        where: { user_token }, // AQUI ESTA EL ERROR
       });
       ctx.body = requests;
       ctx.status = 200;
@@ -297,7 +315,7 @@ router.get('requests.list', '/', async (ctx) => {
   }
 });
 
-router.get('requests.all', '/list_all', async (ctx) => {
+router.get('requests.all', '/list_all',verifyToken, async (ctx) => {
   try {
     const requests = await ctx.orm.Request.findAll({});
     ctx.body = requests;

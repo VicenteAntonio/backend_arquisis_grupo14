@@ -1,46 +1,65 @@
-/* eslint-disable prefer-destructuring */
+const { jwtVerify, createRemoteJWKSet } = require('jose');
 const dotenv = require('dotenv');
-const { jwtDecode } = require('jwt-decode');
-const { User } = require('../src/models');
-
 dotenv.config();
+const JWKS = createRemoteJWKSet(new URL('https://dev-ldmj4nnfbyehlbs5.us.auth0.com/.well-known/jwks.json'));
+const { jwtDecode } = require('jwt-decode');
 
-async function isAdmin(ctx, next) {
-  await next();
-  let token = null;
-  if (ctx.request.header.authorization) {
-    token = ctx.request.header.authorization.split(' ')[1];
-  }
-  console.log('Token:', token);
-  if (!token || token === 'null') {
-    ctx.throw(401, 'Token not found');
-  }
-  // const decodedToken = jwtDecode(token);
-  // const roles = decodedToken['user/roles'] || [];
-  // ctx.assert(roles.includes('admin'), 403, 'You are not a admin');
 
-  // Consultar la base de datos para verificar si el usuario es admin
-  const user = await User.findOne({ where: { user_token: token } });
-  if (!user) {
-    ctx.throw(404, 'User not found');
-  }
-  if (!user.admin) {
-    ctx.throw(403, 'You are not an admin');
-  }
-}
 
 async function verifyToken(ctx, next) {
+  console.log("Verificando token", ctx.request);
   try {
-    const token = ctx.request.header.authorization.split(' ')[1];
+    const authHeader = ctx.request.header.authorization;
+    if (!authHeader) {
+      console.log("Authorization header not found");
+      ctx.throw(401, 'Authorization header not found');
+    }
+
+    const token = authHeader.split(' ')[1];
     if (!token) {
+      console.log("Token not found");
       ctx.throw(401, 'Token not found');
     }
-    const decoded = jwtDecode(token);
-    ctx.state.user = decoded;
+
+    const { payload } = await jwtVerify(token, JWKS, {
+      algorithms: ['RS256'],
+      issuer: 'https://dev-ldmj4nnfbyehlbs5.us.auth0.com/',
+      audience: ['https://dev-ldmj4nnfbyehlbs5.us.auth0.com/api/v2',"https://dev-ldmj4nnfbyehlbs5.us.auth0.com/userinfo"],
+    });
+
+    console.log("Token decodificado:", payload);
+
+    ctx.state.user = payload;
     await next();
-  } catch (error) {
+  } catch (err) {
+    console.error("Error verificando el token:", err);
     ctx.throw(401, 'Invalid or expired token');
   }
 }
 
-module.exports = { isAdmin, verifyToken };
+function isAdmin(ctx, next) {
+  console.log("Verificando si el usuario es admin");
+  const token = ctx.request.header.authorization.split(' ')[1];
+  jwtVerify(token, JWKS, {
+    algorithms: ['RS256'],
+    issuer: 'https://dev-ldmj4nnfbyehlbs5.us.auth0.com/',
+    audience: ['https://dev-ldmj4nnfbyehlbs5.us.auth0.com/api/v2',"https://dev-ldmj4nnfbyehlbs5.us.auth0.com/userinfo"],
+  }).then(({ payload }) => {
+    const roles = payload.roles || [];
+    const admin = ctx.state.user;
+    console.log("Usuario:", admin);
+    console.log("Roles del usuario:", roles);
+    if (!roles.includes('admin')) {
+      ctx.throw(403, 'You are not an admin');
+    }
+    next();
+  }).catch(err => {
+    console.error("Error verificando el token:", err);
+    ctx.throw(401, 'Invalid or expired token');
+  });
+}
+
+module.exports = {
+  verifyToken,
+  isAdmin,
+};

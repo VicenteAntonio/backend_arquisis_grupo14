@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando por defecto para ejecutar la aplicación
-CMD ["sh", "-c", "yarn sequelize db:migrate && yarn sequelize db:seed:all && yarn start"]
+CMD ["sh", "-c", "yarn sequelize-cli db:migrate && yarn sequelize db:seed:all && yarn start"]

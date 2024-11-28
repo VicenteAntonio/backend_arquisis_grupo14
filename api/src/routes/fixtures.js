@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const moment = require('moment-timezone');
 const { Op } = require('sequelize');
+// const { isAdmin, verifyToken } = require('../../utils/authorization');
 const axios = require('axios');
 
 const router = new Router();
@@ -119,6 +120,7 @@ router.get('fixtures.list', '/', async (ctx) => {
       fixtures: fixtures.rows,
     };
     ctx.status = 200;
+    console.log("fixtures", fixtures);
   } catch (error) {
     ctx.body = { error: error.message };
     ctx.status = 500;
@@ -165,7 +167,7 @@ router.get('fixtures.findbyids', '/byids', async (ctx) => {
 // Endpoint para encontrar partidos según la id de llegada a la base de datos
 // Ejemplo: {url}/fixtures/1
 
-router.get('fixtures.find', '/:id', async (ctx) => {
+router.get('fixtures.find', '/:id',  async (ctx) => {
   try {
     const fixture = await ctx.orm.Fixture.findOne({
       where: { fixtureId: ctx.params.id }, // Cambia 'fixtureId' si tu atributo tiene otro nombre

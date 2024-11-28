@@ -1,9 +1,10 @@
 const Router = require('koa-router');
 const axios = require('axios');
+const { verifyToken, isAdmin } = require('../../utils/authorization');
 
 const router = new Router();
 
-router.post('recommendations.create', '/', async (ctx) => {
+router.post('recommendations.create', '/', verifyToken, async (ctx) => {
   try {
     console.log(ctx.request.body);
     const recommendation = await ctx.orm.Recommendation.create(ctx.request.body);
@@ -15,7 +16,7 @@ router.post('recommendations.create', '/', async (ctx) => {
   }
 });
 
-router.get('recommendations.list', '/', async (ctx) => {
+router.get('recommendations.list', '/', verifyToken, async (ctx) => {
   try {
     const { user_token } = ctx.query;
     if (!user_token) {
@@ -46,7 +47,7 @@ router.get('recommendations.list', '/', async (ctx) => {
   }
 });
 
-router.get('/heartbeat', async (ctx) => {
+router.get('/heartbeat',verifyToken, async (ctx) => {
   try {
     const response = await axios.get(`${process.env.JOBS_MASTER_URL}/heartbeat`);
     console.log(response.data);

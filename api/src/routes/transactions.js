@@ -2,12 +2,13 @@ const Router = require('koa-router');
 const tx = require('../../utils/trx');
 const axios = require('axios'); 
 const transporter = require('../config/mailer');
+const { verifyToken } = require('../../utils/authorization');
 
 //const trxRouter = new Router();
 const router = new Router();
 
 // Crear una nueva transacción
-router.post('/create', async (ctx) => {
+router.post('/create',verifyToken, async (ctx) => {
   try {
     const { request_id, quantity } = ctx.request.body;
 
@@ -97,7 +98,7 @@ async function sendValidationToBroker(request_id, group_id, seller, valid) {
 }
 
 // Actualizar la transacción según los resultados
-router.post('/commit', async (ctx) => {
+router.post('/commit', verifyToken, async (ctx) => {
   const  group_id = '14';
   const seller = 0;
   const { ws_token, request_id, mail} = ctx.request.body;

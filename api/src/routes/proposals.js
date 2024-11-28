@@ -11,9 +11,7 @@ async function findFixture(request, ctx) {
   try {
     const Fixture = await ctx.orm.Fixture.findOne({
       where: {
-        departureAirportId: request.departureAirport,
-        arrivalAirportId: request.arrivalAirport,
-        departureTime: moment(request.departureTime).format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
+        fixtureId: request.fixture_id,
       },
     });
 

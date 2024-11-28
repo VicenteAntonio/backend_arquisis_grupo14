@@ -1,9 +1,10 @@
 const { jwtVerify, createRemoteJWKSet } = require('jose');
 const dotenv = require('dotenv');
-
 dotenv.config();
-
 const JWKS = createRemoteJWKSet(new URL('https://dev-ldmj4nnfbyehlbs5.us.auth0.com/.well-known/jwks.json'));
+const { jwtDecode } = require('jwt-decode');
+
+
 
 async function verifyToken(ctx, next) {
   console.log("Verificando token", ctx.request);

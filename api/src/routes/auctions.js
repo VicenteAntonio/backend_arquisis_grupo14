@@ -29,7 +29,6 @@ router.post('auctions.create', '/', async (ctx) => {
 
 router.post('auctions.submit', '/submit', isAdmin, async (ctx) => {
   try {
-    console.log(ctx.request.body);
     const auctionData = ctx.request.body;
     const auction = {
       auctionId: uuidv4(),

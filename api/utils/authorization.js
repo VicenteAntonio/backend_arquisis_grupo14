@@ -8,6 +8,7 @@ dotenv.config();
 async function isAdmin(ctx, next) {
   await next();
   let token = null;
+  console.log(ctx.request.header)
   if (ctx.request.header.authorization) {
     token = ctx.request.header.authorization.split(' ')[1];
   }
@@ -31,6 +32,7 @@ async function isAdmin(ctx, next) {
 
 async function verifyToken(ctx, next) {
   try {
+    console.log('Verifying token...');
     const token = ctx.request.header.authorization.split(' ')[1];
     if (!token) {
       ctx.throw(401, 'Token not found');

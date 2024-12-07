@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     fixtureId: DataTypes.INTEGER,
     leagueName: DataTypes.STRING,
     round: DataTypes.STRING,
-    result: DataTypes.INTEGER,
+    result: DataTypes.STRING,
     quantity: DataTypes.INTEGER,
     groupId: DataTypes.INTEGER,
     type: DataTypes.STRING

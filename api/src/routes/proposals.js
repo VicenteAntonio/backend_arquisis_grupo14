@@ -28,7 +28,7 @@ async function findFixture(request, ctx) {
   }
 }
 
-router.post('proposals.create', '/', async (ctx) => {
+router.post('proposals.create', '/', isAdmin, async (ctx) => {
   try {
     const { groupId, auctionId } = ctx.request.body;
 
@@ -80,7 +80,7 @@ router.post('proposals.submit', '/submit', isAdmin, async (ctx) => {
   }
 });
 
-router.get('proposals.list', '/', isAdmin, async (ctx) => {
+router.get('proposals.list', '/', async (ctx) => {
   try {
     const proposals = await ctx.orm.Proposal.findAll();
     ctx.body = proposals;

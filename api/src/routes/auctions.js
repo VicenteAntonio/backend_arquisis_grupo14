@@ -5,7 +5,7 @@ const { isAdmin, verifyToken } = require('../../utils/authorization');
 
 const router = new Router();
 
-router.post('auctions.create', '/', async (ctx) => {
+router.post('auctions.create', '/', isAdmin, async (ctx) => {
   try {
     const auction = await ctx.orm.Auction.create(ctx.request.body);
     if (auction.groupId === 14) {
@@ -13,7 +13,7 @@ router.post('auctions.create', '/', async (ctx) => {
         where: {
             fixtureId: auction.fixtureId,
             leagueName: auction.leagueName,
-            round: auction.round,
+            leagueRound: auction.round,
         },
       });
       const bonusQuantity = fixture.bonusQuantity - auction.quantity;
@@ -59,7 +59,7 @@ router.get('auctions.listOthers', '/others', isAdmin, async (ctx) => {
   }
 });
 
-router.get('auctions.listAdmin', '/', isAdmin, async (ctx) => {
+router.get('auctions.listAdmin', '/', async (ctx) => {
   try {
     const auctions = await ctx.orm.Auction.findAll({
       where: { groupId: 14 },

@@ -25,7 +25,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       result: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       quantity: {
         type: Sequelize.INTEGER

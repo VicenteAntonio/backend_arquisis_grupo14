@@ -56,10 +56,10 @@ jobs:
           node-version: '20'
 
       - name: Make script executable
-        run: chmod +x ./scripts/bump_version.sh
+        run: chmod +x ./scriptsCI/bump_version.sh
 
       - name: Bump version
-        run: ./scripts/bump_version.sh patch
+        run: ./scriptsCI/bump_version.sh patch
 
       - name: Show version
         run: |

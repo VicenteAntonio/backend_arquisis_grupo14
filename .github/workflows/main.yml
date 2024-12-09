@@ -18,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        project: [api, listener, requests, validations, history, recommendation-service/jobsMaster, recommendation-service/workers, auctions-proposals]
+        project: [api, listener, request, validations, history, recommendation_service/jobsMaster, recommendation_service/workers, auctions_proposals]
 
     steps:
       - name: Checkout code

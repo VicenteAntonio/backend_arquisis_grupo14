@@ -15,9 +15,9 @@ router.post('/', async (ctx) => {
         fixtureTimestamp: receivedHistory.fixture.timestamp,
         fixtureStatus: receivedHistory.fixture.status
       };
-
-      await ctx.orm.History.create(historyToAdd);
     }));
+
+    await ctx.orm.History.create(historyToAdd);
 
     ctx.status = 201;
   } catch (error) {

@@ -237,6 +237,7 @@ const connection = {
 const worker = new Worker('recommendationQueue', processor, {
   autorun: false,
   connection,
+  concurrency: 1,
 });
 
 console.log('Worker Listening to Jobs...');
